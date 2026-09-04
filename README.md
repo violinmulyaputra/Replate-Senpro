@@ -7,4 +7,4 @@ Ketua Kelompok:
 
 Anggota 1:
 
-Anggota 2:
+Anggota 2: Diaz Amantajati Susilo - 24/545483/TK/60678
