@@ -5,6 +5,6 @@ Kelompok 19
 
 Ketua Kelompok:
 
-Anggota 1:
+Anggota 1: Putri Tajudin - 24/535824/TK/59469
 
 Anggota 2:
