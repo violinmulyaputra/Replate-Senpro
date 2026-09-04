@@ -5,6 +5,6 @@ Kelompok 19
 
 Ketua Kelompok: Violin Mulya Putra - 24/534192/TK/59201
 
-Anggota 1:
+Anggota 1: Putri Tajudin - 24/535824/TK/59469
 
 Anggota 2: Diaz Amantajati Susilo - 24/545483/TK/60678
