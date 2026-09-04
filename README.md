@@ -3,7 +3,7 @@ Replate adalah aplikasi marketplace yang membantu restoran menjual makanan surpl
 
 Kelompok 19
 
-Ketua Kelompok:
+Ketua Kelompok: Violin Mulya Putra - 24/534192/TK/59201
 
 Anggota 1:
 
