@@ -172,7 +172,7 @@ Tujuan utama Replate meliputi:
 
 ### Use Case Diagram
 
-![Use Case Diagram](images/Replate_Use_Case_Diagram.drawio.png)
+![Use Case Diagram](Replate_Use_Case_Diagram.drawio.png)
 
 ### Functional Requirements
 
@@ -205,10 +205,10 @@ Functional requirements Replate disusun berdasarkan use case yang telah dirancan
 
 ### Entity Relationship Diagram
    
-![Entity Relationship Diagram](images/Raplate_ERD.png)
+![Entity Relationship Diagram](Raplate_ERD.png)
    
 ### Low-Fidelity Wireframe
    
-![Customer Wireframe](images/Customer_Wireframe.png)
-   
-![Restaurant Owner Wireframe](images/Restaurant_Owner_Wireframe.png)
+![Customer Wireframe](Customer_Wireframe.png)
+
+![Restaurant Owner Wireframe](Restaurant_Owner_Wireframe.png)
