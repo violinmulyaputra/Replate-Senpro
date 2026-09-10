@@ -21,6 +21,10 @@ Simpan kode frontend di `frontend/` dan kode API, business logic, serta migratio
 
 ![Entity Relationship Diagram Replate](diagram/Raplate_ERD.png)
 
+## Customer Low-Fidelity Wireframe
+
+![Customer Low-Fidelity Wireframe Replate](diagram/Customer_Wireframe.png)
+
 Kelompok 19
 
 Ketua Kelompok: Violin Mulya Putra - 24/534192/TK/59201
