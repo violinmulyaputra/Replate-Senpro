@@ -172,7 +172,7 @@ Tujuan utama Replate meliputi:
 
 ### Use Case Diagram
 
-![Use Case Diagram](../diagram/Replate_Use_Case_Diagram.drawio.png)
+![Use Case Diagram](images/Replate_Use_Case_Diagram.drawio.png)
 
 ### Functional Requirements
 
@@ -204,10 +204,11 @@ Functional requirements Replate disusun berdasarkan use case yang telah dirancan
 | | FR-22 | Sistem harus menampilkan dashboard keuangan yang memperlihatkan total pendapatan pemulihan (revenue recovery) hasil penjualan makanan surplus (View Financial Dashboard). |
 
 ### Entity Relationship Diagram
-
-![Entity Relationship Diagram](../diagram/Raplate_ERD.png)
-
+   
+![Entity Relationship Diagram](images/Raplate_ERD.png)
+   
 ### Low-Fidelity Wireframe
-![Customer Wireframe](../diagram/Customer_Wireframe.png)
-
-![Restaurant Owner Wireframe](../diagram/Restaurant_Owner_Wireframe.png)
+   
+![Customer Wireframe](images/Customer_Wireframe.png)
+   
+![Restaurant Owner Wireframe](images/Restaurant_Owner_Wireframe.png)
