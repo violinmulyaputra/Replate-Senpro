@@ -21,6 +21,16 @@ dotnet run --project backend/Replate.Api --urls http://localhost:5000
 
 Health check tersedia di `GET http://localhost:5000/api/health`. Atur koneksi SQL Server atau Azure SQL melalui environment variable `ConnectionStrings__DefaultConnection` sebelum menggunakan database.
 
+### Database Migration
+
+```bash
+export ConnectionStrings__DefaultConnection="<SQL Server atau Azure SQL connection string>"
+dotnet tool restore
+dotnet ef database update --project backend/Replate.Api --startup-project backend/Replate.Api
+```
+
+Migration awal membuat tabel dan relasi sesuai ERD Replate.
+
 ## Use Case Diagram
 
 ![Use Case Diagram Replate](diagram/Replate_Use_Case_Diagram.drawio.png)
