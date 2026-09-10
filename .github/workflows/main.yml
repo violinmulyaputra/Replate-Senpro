@@ -23,14 +23,18 @@ jobs:
         run: dotnet tool restore
 
       - name: Restore dependencies
-        run: dotnet restore backend/Replate.Api/Replate.Api.csproj
+        run: dotnet restore backend/Replate.Api.Tests/Replate.Api.Tests.csproj
 
       - name: Build
         run: dotnet build backend/Replate.Api/Replate.Api.csproj --configuration Release --no-restore
 
+      - name: Test
+        run: dotnet test backend/Replate.Api.Tests/Replate.Api.Tests.csproj --configuration Release --no-restore
+
       - name: Verify database migration
         env:
           ConnectionStrings__DefaultConnection: Server=localhost;Database=Replate;Integrated Security=True;TrustServerCertificate=True
+          Jwt__Key: ci-only-key-that-is-at-least-32-characters-long
         run: >-
           dotnet ef migrations has-pending-model-changes --project backend/Replate.Api
           --startup-project backend/Replate.Api --configuration Release --no-build
