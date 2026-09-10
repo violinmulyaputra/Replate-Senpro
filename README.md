@@ -13,6 +13,14 @@ Replate-Senpro/
 
 Simpan kode frontend di `frontend/` dan kode API, business logic, serta migration database di `backend/`. Dokumentasi dan aset diagram disimpan di root atau `diagram/`.
 
+## Menjalankan Backend
+
+```bash
+dotnet run --project backend/Replate.Api --urls http://localhost:5000
+```
+
+Health check tersedia di `GET http://localhost:5000/api/health`. Atur koneksi SQL Server atau Azure SQL melalui environment variable `ConnectionStrings__DefaultConnection` sebelum menggunakan database.
+
 ## Use Case Diagram
 
 ![Use Case Diagram Replate](diagram/Replate_Use_Case_Diagram.drawio.png)
