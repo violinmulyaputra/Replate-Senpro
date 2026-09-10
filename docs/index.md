@@ -73,9 +73,8 @@ Surplus Indonesia masih sebatas marketplace reaktif tanpa analisis data operasio
 
 #### Kompetitor 2: Too Good To Go
 
-| | |
-|---|---|
 | **Nama** | Too Good To Go |
+|---|---|
 | **Jenis Kompetitor** | Direct Competitor |
 | **Jenis Produk** | Marketplace B2C *Surplus Food Bag* |
 | **Target Customer** | Restoran, Konsumen Hemat |
