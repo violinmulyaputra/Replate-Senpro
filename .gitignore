@@ -3,6 +3,11 @@
 [Oo]bj/
 TestResults/
 
+# Frontend build output
+node_modules/
+dist/
+coverage/
+
 # Local IDE settings
 .vs/
 .idea/
