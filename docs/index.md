@@ -38,6 +38,7 @@ Replate diusulkan sebagai web application marketplace yang menghubungkan restora
 Selain sebagai marketplace, Replate dilengkapi dengan sistem penilaian risiko keamanan makanan berdasarkan karakteristik makanan, waktu, dan kondisi penyimpanan untuk membantu memastikan makanan yang ditawarkan masih layak dikonsumsi. Replate juga memanfaatkan data historis produksi dan penjualan untuk menganalisis pola surplus serta memberikan rekomendasi jumlah produksi sehingga pelaku usaha dapat mengurangi potensi kelebihan produksi dan food waste di masa mendatang.
 
 #### Rancangan Fitur Solusi:
+
 | Fitur | Keterangan |
 |---|---|
 | Authentication & Role Management | Registrasi, login, dan pembagian hak akses antara Customer dan Restaurant Owner. |
