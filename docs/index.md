@@ -120,6 +120,7 @@ Replate merupakan marketplace makanan surplus yang mempertemukan pelaku usaha ku
 ### Pengguna Potensial & Kebutuhan
 #### A. Restaurant Owner / Merchant (Pelaku Usaha Kuliner)
 **Profil:** Restoran, kafe, bakery, hotel, dan UMKM kuliner yang memiliki surplus makanan harian dan siap menggunakan platform digital.
+
 **Kebutuhan Pengguna:**
 1. Menjual makanan surplus dengan cepat dan praktis melalui marketplace.
 2. Kemudahan dalam mendaftarkan menu (Manage Menu) dan membuat listing makanan surplus secara cepat (Create Surplus Food Listing).
@@ -128,6 +129,7 @@ Replate merupakan marketplace makanan surplus yang mempertemukan pelaku usaha ku
 5. Dashboard analitik untuk melihat riwayat surplus, performa keuangan (Financial Dashboard), serta melihat rekomendasi porsi produksi (View Production Recommendation).
 #### B. Customer / Pembeli
 **Profil:** Mahasiswa, pekerja, masyarakat hemat, dan konsumen yang peduli terhadap lingkungan (eco-conscious).
+
 **Kebutuhan Pengguna:**
 1. Cara mudah menemukan makanan surplus di sekitar dengan harga diskon.
 2. Kemudahan mencari dan memfilter makanan berdasarkan lokasi, harga, dan jenis (Search and Filter Food).
