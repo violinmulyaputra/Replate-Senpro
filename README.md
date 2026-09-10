@@ -29,6 +29,13 @@ Health check tersedia di `GET http://localhost:5000/api/health`. Atur koneksi SQ
 
 JWT berlaku selama 60 menit secara default. Ubah durasinya melalui `Jwt__ExpiresMinutes`.
 
+### Role-Based Access
+
+Kirim JWT melalui header `Authorization: Bearer <token>`. Endpoint berikut digunakan untuk memverifikasi pembatasan role:
+
+- `GET /api/access/customer` hanya untuk role `Customer`.
+- `GET /api/access/restaurant-owner` hanya untuk role `RestaurantOwner`.
+
 ### Database Migration
 
 ```bash
