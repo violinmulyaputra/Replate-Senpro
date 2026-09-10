@@ -108,48 +108,106 @@ Berbeda dari model *Surprise Bag* yang acak dan tidak transparan, Replate menyed
 
 Garda Pangan berfokus murni pada redistribusi makanan berbasis donasi/non-profit. Replate memberikan nilai tambah ekonomis bagi pelaku usaha kuliner dengan memungkinkan makanan surplus yang masih layak konsumsi untuk dijual dan menghasilkan pendapatan.
 
-## Perancangan SDLC (Modul 2)
-   
+## Jawaban Modul 2
+
+### Metodologi SDLC
+
+Metodologi SDLC yang digunakan dalam pengembangan Replate adalah **Agile**, dengan pendekatan iteratif berbasis sprint. Pengembangan dilakukan dalam beberapa siklus dengan durasi sekitar 1–2 minggu yang disesuaikan dengan jadwal praktikum Senior Project selama satu semester.
+
+Pemilihan Agile didasarkan pada beberapa pertimbangan berikut:
+
+1. **Kebutuhan Replate masih dapat berubah**  
+   Replate memiliki beberapa bagian, yaitu networking, cloud computing, dan artificial intelligence (AI). Karena sistem masih dalam tahap pengembangan, beberapa kebutuhan teknis dan fitur dapat berubah setelah dilakukan pengujian. Agile memungkinkan tim untuk menyesuaikan kebutuhan tersebut secara lebih fleksibel dibandingkan metode Waterfall.
+
+2. **Pengembangan AI membutuhkan proses berulang**  
+   Pengembangan AI tidak dapat langsung selesai dalam satu tahap. Prosesnya meliputi penyiapan data, penentuan fitur, pelatihan model, evaluasi hasil, dan perbaikan model. Jika hasil model belum sesuai, proses tersebut perlu dilakukan kembali. Pendekatan iteratif pada Agile mendukung proses pengembangan tersebut.
+
+3. **Antar-komponen saling bergantung**  
+   Setiap bagian dalam Replate saling berhubungan. Frontend membutuhkan REST API, Backend membutuhkan Database, sedangkan fitur AI membutuhkan data dari sistem. Dengan pengembangan secara bertahap, setiap komponen dapat diuji lebih awal sehingga masalah integrasi dapat ditemukan dan diperbaiki lebih cepat.
+
+4. **Pembagian tugas dalam tim mendukung Agile**  
+   Tim terdiri dari beberapa role, yaitu Project Manager, Software Engineer, UI/UX Engineer, AI Engineer, dan Cloud Engineer. Agile memungkinkan anggota tim mengerjakan tugas masing-masing secara bersamaan dalam satu sprint, kemudian mengintegrasikan dan menguji hasil pekerjaan secara bersama-sama.
+
+5. **Sesuai dengan sistem praktikum yang dilakukan setiap minggu**  
+   Praktikum Senior Project memiliki pembagian tugas dan deliverable setiap minggu. Hal tersebut sesuai dengan konsep sprint pada Agile karena perkembangan proyek dapat dilakukan dan dipantau secara bertahap.
+
 ### Tujuan Produk
-Replate merupakan marketplace makanan surplus yang mempertemukan pelaku usaha kuliner dengan konsumen untuk menjual makanan yang masih layak dikonsumsi dengan harga terjangkau. Selain membantu mengurangi kerugian finansial akibat food waste, Replate juga berperan dalam mencegah terjadinya kelebihan produksi. Dengan memanfaatkan data historis penjualan, Replate dapat memberikan rekomendasi jumlah produksi yang lebih sesuai dengan kebutuhan, sehingga restoran dan UMKM F&B dapat mengelola produksi secara lebih efisien. 
-**Tujuan Utama Replate:**
-1. Bagi Restoran/UMKM Kuliner:  Memulihkan pendapatan dari makanan surplus yang layak jual, sekaligus menyediakan dashboard analisis untuk memprediksi porsi produksi dan memantau batas aman konsumsi produk.
-2. Bagi Konsumen: Menyediakan akses ke makanan berkualitas dengan harga terjangkau secara transparan, aman, dan mudah dijangkau.
-3. Bagi Lingkungan: Memangkas akumulasi food waste dari industri kuliner secara langsung melalui pendekatan pencegahan dan penyaluran kembali.
-   
+
+Replate merupakan marketplace makanan surplus yang mempertemukan pelaku usaha kuliner dengan konsumen untuk menjual makanan yang masih layak dikonsumsi dengan harga terjangkau. Selain membantu mengurangi kerugian finansial akibat food waste, Replate juga berperan dalam mencegah terjadinya kelebihan produksi. Dengan memanfaatkan data historis penjualan, Replate dapat memberikan rekomendasi jumlah produksi yang lebih sesuai dengan kebutuhan sehingga restoran dan UMKM F&B dapat mengelola produksi secara lebih efisien.
+
+Tujuan utama Replate meliputi:
+
+1. **Bagi Restoran/UMKM Kuliner:** Memulihkan pendapatan dari makanan surplus yang layak jual, sekaligus menyediakan dashboard analisis untuk memprediksi porsi produksi dan memantau batas aman konsumsi produk.
+
+2. **Bagi Konsumen:** Menyediakan akses ke makanan berkualitas dengan harga terjangkau secara transparan, aman, dan mudah dijangkau.
+
+3. **Bagi Lingkungan:** Memangkas akumulasi food waste dari industri kuliner secara langsung melalui pendekatan pencegahan dan penyaluran kembali.
+
 ### Pengguna Potensial & Kebutuhan
-#### A. Restaurant Owner / Merchant (Pelaku Usaha Kuliner)
+
+#### Restaurant Owner / Merchant
+
 **Profil:** Restoran, kafe, bakery, hotel, dan UMKM kuliner yang memiliki surplus makanan harian dan siap menggunakan platform digital.
 
 **Kebutuhan Pengguna:**
+
 1. Menjual makanan surplus dengan cepat dan praktis melalui marketplace.
-2. Kemudahan dalam mendaftarkan menu (Manage Menu) dan membuat listing makanan surplus secara cepat (Create Surplus Food Listing).
-3. Sistem pemantauan stok otomatis (Automatic Stock Management) agar makanan yang habis tidak terus dipesan.
-4. Fitur untuk memverifikasi kode pickup pesanan konsumen (Verify Pickup).
-5. Dashboard analitik untuk melihat riwayat surplus, performa keuangan (Financial Dashboard), serta melihat rekomendasi porsi produksi (View Production Recommendation).
-#### B. Customer / Pembeli
+2. Kemudahan dalam mendaftarkan menu melalui fitur Manage Menu dan membuat listing makanan surplus melalui Create Surplus Food Listing.
+3. Sistem pemantauan stok otomatis melalui Automatic Stock Management agar makanan yang habis tidak terus dipesan.
+4. Fitur untuk memverifikasi kode pickup pesanan konsumen melalui Verify Pickup.
+5. Dashboard analitik untuk melihat riwayat surplus, performa keuangan melalui Financial Dashboard, serta rekomendasi porsi produksi melalui View Production Recommendation.
+
+#### Customer / Pembeli
+
 **Profil:** Mahasiswa, pekerja, masyarakat hemat, dan konsumen yang peduli terhadap lingkungan (eco-conscious).
 
 **Kebutuhan Pengguna:**
-1. Cara mudah menemukan makanan surplus di sekitar dengan harga diskon.
-2. Kemudahan mencari dan memfilter makanan berdasarkan lokasi, harga, dan jenis (Search and Filter Food).
-3. Transparansi informasi menu (itemized listing), perkiraan waktu pickup, dan status kelayakan makanan (View Food Details).
-4. Fitur pemesanan online, reservasi, dan keranjang belanja (Checkout and Confirm Reservation).
-5. Akses informasi status dan riwayat pesanan untuk mengetahui perkembangan pesanan setelah melakukan reservasi.
-6. Akses cepat ke kode pickup unik (View Pickup Code) untuk ditunjukkan kepada restoran saat mengambil pesanan secara mandiri.
 
-   
+1. Cara mudah menemukan makanan surplus di sekitar dengan harga diskon.
+2. Kemudahan mencari dan memfilter makanan berdasarkan lokasi, harga, dan jenis melalui Search and Filter Food.
+3. Transparansi informasi menu, perkiraan waktu pickup, dan status kelayakan makanan melalui View Food Details.
+4. Fitur pemesanan online, reservasi, dan keranjang belanja melalui Checkout and Confirm Reservation.
+5. Akses informasi status dan riwayat pesanan untuk mengetahui perkembangan pesanan setelah melakukan reservasi.
+6. Akses cepat ke kode pickup unik melalui View Pickup Code untuk ditunjukkan kepada restoran saat mengambil pesanan secara mandiri.
+
 ### Use Case Diagram
-![Use Case Diagram](link-gambar-atau-path-diagram)
-   
+
+![Use Case Diagram](../diagram/Replate_Use_Case_Diagram.drawio.png)
+
 ### Functional Requirements
-<isi>
-   
+
+Functional requirements Replate disusun berdasarkan use case yang telah dirancang dan dikelompokkan berdasarkan modul sistem.
+
+| **Modul** | **FR** | **Deskripsi** |
+|---|---|---|
+| User Management & Authentication | FR-01 | Sistem harus memungkinkan Customer dan Restaurant Owner melakukan registrasi akun dan login sesuai peran (role) masing-masing. |
+| | FR-02 | Sistem harus memungkinkan Restaurant Owner untuk mengelola informasi profil restoran (Manage Restaurant), seperti nama, alamat, dan nomor telepon. |
+| Customer Marketplace & Exploration | FR-03 | Sistem harus dapat menampilkan katalog makanan surplus dari berbagai restoran (Browse Marketplace). |
+| | FR-04 | Sistem harus menyediakan fitur pencarian dan penyaringan (Search and Filter Food) berdasarkan kata kunci, kategori, lokasi, atau harga. |
+| | FR-05 | Sistem harus menampilkan rincian informasi makanan (View Food Details), termasuk harga, jumlah tersedia, informasi kelayakan makanan, dan estimasi waktu pickup. |
+| | FR-06 | Sistem harus memungkinkan Customer untuk menambahkan dan mengelola item di dalam keranjang belanja (Manage Shopping Cart). |
+| | FR-07 | Sistem harus memungkinkan Customer untuk melakukan pemesanan dan konfirmasi reservasi (Checkout and Confirm Reservation). |
+| | FR-08 | Sistem harus memungkinkan Customer memantau pembaruan status pesanan (View Order Status) yang sedang berlangsung secara real-time. |
+| | FR-09 | Sistem harus membuat dan menampilkan kode pickup unik (View Pickup Code) bagi Customer setelah pesanan dikonfirmasi. |
+| | FR-10 | Sistem harus memungkinkan Customer melihat riwayat seluruh pesanan yang pernah dilakukan sebelumnya (View Order History). |
+| Merchant Operation & Surplus Management | FR-11 | Sistem harus memungkinkan Restaurant Owner untuk menambahkan, mengubah, dan menghapus daftar menu harian (Manage Menu). |
+| | FR-12 | Sistem harus memungkinkan Restaurant Owner untuk mencatat data produksi harian (Input Production Record), meliputi jumlah makanan yang diproduksi, terjual, dan menjadi surplus. |
+| | FR-13 | Sistem harus memungkinkan Restaurant Owner untuk membuat daftar makanan surplus (Create Surplus Food Listing) lengkap dengan harga diskon (rescue price), jumlah porsi, dan rentang waktu pickup. |
+| | FR-14 | Sistem harus dapat memperbarui stok makanan surplus secara otomatis (Automatic Stock Management) setiap kali terjadi transaksi pemesanan. |
+| | FR-15 | Sistem harus memungkinkan Restaurant Owner untuk mengatur stok makanan surplus secara manual jika terdapat penyesuaian (Manage Surplus Stock). |
+| | FR-16 | Sistem harus memungkinkan Restaurant Owner melihat dan mengelola status pesanan yang masuk (Manage Orders) dari Customer. |
+| | FR-17 | Sistem harus memungkinkan Restaurant Owner mengatur estimasi rentang waktu pengambilan makanan surplus (Set Pickup Estimation). |
+| | FR-18 | Sistem harus memungkinkan Restaurant Owner memverifikasi kode pickup milik Customer (Verify Pickup) untuk mengonfirmasi penyerahan makanan di lokasi. |
+| B2B Analytics & AI Engine | FR-19 | Sistem harus menganalisis data historis produksi dan surplus untuk mengidentifikasi pola atau tren surplus (Analyze Production and Surplus Data). |
+| | FR-20 | Sistem harus dapat menghasilkan dan menampilkan rekomendasi jumlah produksi menggunakan model AI (Generate & View Production Recommendation) untuk periode berikutnya. |
+| | FR-21 | Sistem harus menampilkan dashboard analitik visual yang menyajikan grafik tren kerugian porsi dan akumulasi makanan yang terselamatkan (View Surplus Dashboard). |
+| | FR-22 | Sistem harus menampilkan dashboard keuangan yang memperlihatkan total pendapatan pemulihan (revenue recovery) hasil penjualan makanan surplus (View Financial Dashboard). |
+
 ### Entity Relationship Diagram
-![ERD](link-gambar-atau-path-diagram)
-   
+
+![Entity Relationship Diagram](../diagram/Raplate_ERD.png)
+
 ### Low-Fidelity Wireframe
-![Wireframe](link-gambar-atau-path-diagram)
-   
-### Gantt Chart
-![Gantt Chart](link-gambar-atau-path-diagram)
+![Customer Wireframe](../diagram/Customer_Wireframe.png)
+
+![Restaurant Owner Wireframe](../diagram/Restaurant_Owner_Wireframe.png)
