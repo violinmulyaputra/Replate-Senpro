@@ -1,0 +1,16 @@
+# .NET build output
+[Bb]in/
+[Oo]bj/
+TestResults/
+
+# Local IDE settings
+.vs/
+.idea/
+*.user
+*.suo
+
+# Local environment and macOS files
+.env
+.env.*
+!.env.example
+.DS_Store
