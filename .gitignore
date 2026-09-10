@@ -14,7 +14,10 @@ coverage/
 *.user
 *.suo
 
-# Local environment and macOS files
+# Local worktrees
+.worktrees/
+
+# Environment and local OS files
 .env
 .env.*
 !.env.example
