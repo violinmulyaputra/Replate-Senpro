@@ -54,15 +54,15 @@ Selain sebagai marketplace, Replate dilengkapi dengan sistem penilaian risiko ke
 | Notifikasi & Status Real-Time | Memberikan pembaruan status pesanan dan stok secara real-time. |
 
 ### Analisis Kompetitor
-#### Kompetitor 1: Surplus
+#### Kompetitor 1: 
 
-| | |
-|---|---|
 | **Nama** | Surplus |
+|---|---|
 | **Jenis Kompetitor** | Direct Competitor |
 | **Jenis Produk** | Marketplace B2C untuk makanan dan barang berlebih |
 | **Target Customer** | UMKM F&B (restoran, hotel, supermarket) |
 
+**Kelebihan & Kekurangan**
 | Kelebihan | Kekurangan |
 |---|---|
 | - Sudah beroperasi di pasar Indonesia sejak tahun 2020, lebih paham perilaku pasar lokal<br>- Terintegrasi e-wallet dan layanan GoSend<br>- Kolaborasi aktif dengan komunitas peduli lingkungan | - Jangkauan mitra masih terbatas di kota-kota besar Jawa, Bali dan Sulawesi Selatan<br>- Strateginya menjadi horizontal ke banyak kategori barang, sehingga kedalaman fitur khusus F&B jadi bukan prioritas utama<br>- Fitur belum dilengkapi kecerdasan buatan |
@@ -71,15 +71,15 @@ Selain sebagai marketplace, Replate dilengkapi dengan sistem penilaian risiko ke
 
 Surplus Indonesia masih sebatas marketplace reaktif tanpa analisis data operasional. Replate unggul karena memadukan marketplace dengan sistem analisis historis untuk merekomendasikan porsi produksi keesokan harinya, sekaligus menyediakan sistem penilaian risiko keamanan makanan demi menjaga kualitas dan kepercayaan konsumen.
 
-#### Kompetitor 2: Too Good To Go
+#### Kompetitor 2: 
 
-| | |
-|---|---|
 | **Nama** | Too Good To Go |
+|---|---|
 | **Jenis Kompetitor** | Direct Competitor |
 | **Jenis Produk** | Marketplace B2C *Surplus Food Bag* |
 | **Target Customer** | Restoran, Konsumen Hemat |
 
+**Kelebihan & Kekurangan**
 | Kelebihan | Kekurangan |
 |---|---|
 | - Skala terbesar di dunia dengan lebih dari 120 juta pengguna dan 180.000 mitra bisnis di 21 negara<br>- Model bisnis berupa *Surplus Bag* yang simpel bagi penjual | - Model "Surprise bag" yang tidak transparan membuat pembeli tidak bisa memilih menu dan beresiko tinggi bagi penderita alergi<br>- Belum hadir di pasar Indonesia |
@@ -88,15 +88,15 @@ Surplus Indonesia masih sebatas marketplace reaktif tanpa analisis data operasio
 
 Berbeda dari model *Surprise Bag* yang acak dan tidak transparan, Replate menyediakan itemized listing sehingga pembeli tahu persis apa yang mereka beli. Selain itu, Replate dilengkapi sistem penilai risiko keamanan makanan berbasis waktu dan kondisi penyimpanan untuk menjamin kelayakan konsumsi, serta siap melayani pasar Indonesia yang belum dijangkau Too Good To Go.
 
-#### Kompetitor 3: Garda Pangan
+#### Kompetitor 3: 
 
-| | |
-|---|---|
 | **Nama** | Garda Pangan |
+|---|---|
 | **Jenis Kompetitor** | Indirect Competitor |
 | **Jenis Produk** | Layanan penyaluran makanan sisa |
 | **Target Customer** | Masyarakat pra-sejahtera sebagai penerima, restoran/hotel sebagai donatur |
 
+**Kelebihan & Kekurangan**
 | Kelebihan | Kekurangan |
 |---|---|
 | - Dampak sosial sangat kuat<br>- Ada proses uji kelayakan yang ketat sebelum disalurkan<br>- Bebas biaya bagi donatur | - Bukan bisnis komersial, tidak menghasilkan pendapatan bagi donatur<br>- Skala operasional terbatas karena bergantung pada ketersediaan relawan fisik dan donasi operasional |
