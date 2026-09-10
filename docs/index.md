@@ -107,3 +107,47 @@ Berbeda dari model *Surprise Bag* yang acak dan tidak transparan, Replate menyed
 **Key Competitive Advantage & Unique Value**
 
 Garda Pangan berfokus murni pada redistribusi makanan berbasis donasi/non-profit. Replate memberikan nilai tambah ekonomis bagi pelaku usaha kuliner dengan memungkinkan makanan surplus yang masih layak konsumsi untuk dijual dan menghasilkan pendapatan.
+
+## Perancangan SDLC (Modul 2)
+   
+### Tujuan Produk
+Replate merupakan marketplace makanan surplus yang mempertemukan pelaku usaha kuliner dengan konsumen untuk menjual makanan yang masih layak dikonsumsi dengan harga terjangkau. Selain membantu mengurangi kerugian finansial akibat food waste, Replate juga berperan dalam mencegah terjadinya kelebihan produksi. Dengan memanfaatkan data historis penjualan, Replate dapat memberikan rekomendasi jumlah produksi yang lebih sesuai dengan kebutuhan, sehingga restoran dan UMKM F&B dapat mengelola produksi secara lebih efisien. 
+**Tujuan Utama Replate:**
+1. Bagi Restoran/UMKM Kuliner:  Memulihkan pendapatan dari makanan surplus yang layak jual, sekaligus menyediakan dashboard analisis untuk memprediksi porsi produksi dan memantau batas aman konsumsi produk.
+2. Bagi Konsumen: Menyediakan akses ke makanan berkualitas dengan harga terjangkau secara transparan, aman, dan mudah dijangkau.
+3. Bagi Lingkungan: Memangkas akumulasi food waste dari industri kuliner secara langsung melalui pendekatan pencegahan dan penyaluran kembali.
+   
+### Pengguna Potensial & Kebutuhan
+#### A. Restaurant Owner / Merchant (Pelaku Usaha Kuliner)
+**Profil:** Restoran, kafe, bakery, hotel, dan UMKM kuliner yang memiliki surplus makanan harian dan siap menggunakan platform digital.
+**Kebutuhan Pengguna:**
+1. Menjual makanan surplus dengan cepat dan praktis melalui marketplace.
+2. Kemudahan dalam mendaftarkan menu (Manage Menu) dan membuat listing makanan surplus secara cepat (Create Surplus Food Listing).
+3. Sistem pemantauan stok otomatis (Automatic Stock Management) agar makanan yang habis tidak terus dipesan.
+4. Fitur untuk memverifikasi kode pickup pesanan konsumen (Verify Pickup).
+5. Dashboard analitik untuk melihat riwayat surplus, performa keuangan (Financial Dashboard), serta melihat rekomendasi porsi produksi (View Production Recommendation).
+#### B. Customer / Pembeli
+**Profil:** Mahasiswa, pekerja, masyarakat hemat, dan konsumen yang peduli terhadap lingkungan (eco-conscious).
+**Kebutuhan Pengguna:**
+1. Cara mudah menemukan makanan surplus di sekitar dengan harga diskon.
+2. Kemudahan mencari dan memfilter makanan berdasarkan lokasi, harga, dan jenis (Search and Filter Food).
+3. Transparansi informasi menu (itemized listing), perkiraan waktu pickup, dan status kelayakan makanan (View Food Details).
+4. Fitur pemesanan online, reservasi, dan keranjang belanja (Checkout and Confirm Reservation).
+5. Akses informasi status dan riwayat pesanan untuk mengetahui perkembangan pesanan setelah melakukan reservasi.
+6. Akses cepat ke kode pickup unik (View Pickup Code) untuk ditunjukkan kepada restoran saat mengambil pesanan secara mandiri.
+
+   
+### Use Case Diagram
+![Use Case Diagram](link-gambar-atau-path-diagram)
+   
+### Functional Requirements
+<isi>
+   
+### Entity Relationship Diagram
+![ERD](link-gambar-atau-path-diagram)
+   
+### Low-Fidelity Wireframe
+![Wireframe](link-gambar-atau-path-diagram)
+   
+### Gantt Chart
+![Gantt Chart](link-gambar-atau-path-diagram)
