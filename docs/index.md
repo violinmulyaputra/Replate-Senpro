@@ -213,3 +213,6 @@ Functional requirements Replate disusun berdasarkan use case yang telah dirancan
 ![Customer Wireframe](Customer_Wireframe.png)
 
 ![Restaurant Owner Wireframe](Restaurant_Owner_Wireframe.png)
+
+### Gantt-Chart
+![Gantt-Chart](Replate_Gantt_Chart.jpeg)
