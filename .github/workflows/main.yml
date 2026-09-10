@@ -20,7 +20,7 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore Replate-Senpro.csproj
+        run: dotnet restore backend/Replate.Api/Replate.Api.csproj
 
       - name: Build
-        run: dotnet build Replate-Senpro.csproj --configuration Release --no-restore
+        run: dotnet build backend/Replate.Api/Replate.Api.csproj --configuration Release --no-restore
