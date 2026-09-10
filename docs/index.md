@@ -57,7 +57,6 @@ Selain sebagai marketplace, Replate dilengkapi dengan sistem penilaian risiko ke
 #### Kompetitor 1: Surplus
 
 | | |
-|---|---|
 | **Nama** | Surplus |
 | **Jenis Kompetitor** | Direct Competitor |
 | **Jenis Produk** | Marketplace B2C untuk makanan dan barang berlebih |
