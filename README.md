@@ -16,10 +16,18 @@ Simpan kode frontend di `frontend/` dan kode API, business logic, serta migratio
 ## Menjalankan Backend
 
 ```bash
+export Jwt__Key="<secret minimal 32 karakter>"
 dotnet run --project backend/Replate.Api --urls http://localhost:5000
 ```
 
 Health check tersedia di `GET http://localhost:5000/api/health`. Atur koneksi SQL Server atau Azure SQL melalui environment variable `ConnectionStrings__DefaultConnection` sebelum menggunakan database.
+
+### Authentication
+
+- `POST /api/auth/register` menerima `name`, `email`, `password`, dan `role` (`Customer` atau `RestaurantOwner`).
+- `POST /api/auth/login` menerima `email` dan `password` lalu mengembalikan JWT.
+
+JWT berlaku selama 60 menit secara default. Ubah durasinya melalui `Jwt__ExpiresMinutes`.
 
 ### Database Migration
 
