@@ -12,6 +12,23 @@ Replate adalah *food rescue marketplace* yang membantu restoran menjual makanan 
   <img src="figma-make/Replate-color-palette.png" alt="Color palette Replate" width="700">
 </p>
 
+## Typography
+
+Replate menggunakan `"Plus Jakarta Sans", Arial, sans-serif` pada seluruh interface.
+
+| Style | Size / line height | Weight | Penggunaan |
+| --- | --- | --- | --- |
+| Display | 48 / 56 px | Bold | Hero dan headline utama |
+| Heading 1 | 32 / 40 px | Bold | Judul halaman |
+| Heading 2 | 24 / 32 px | Bold | Judul section |
+| Heading 3 | 20 / 28 px | SemiBold | Judul card |
+| Body | 16 / 24 px | Regular | Konten utama |
+| Body Small | 14 / 20 px | Regular | Konten pendukung |
+| Button dan Label | 14–16 px | SemiBold | Tombol dan label input |
+| Caption | 12 / 18 px | Medium | Metadata dan keterangan |
+
+Harga, pickup code, jumlah, dan data dashboard menggunakan tabular numbers.
+
 ## Arsitektur
 
 ```text
