@@ -6,6 +6,12 @@
 
 Replate adalah *food rescue marketplace* yang membantu restoran menjual makanan surplus yang masih layak konsumsi dengan harga lebih terjangkau. Data produksi dan surplus nantinya digunakan untuk memberi rekomendasi produksi dan mengurangi *food waste*.
 
+## Color palette
+
+<p align="center">
+  <img src="figma-make/Replate-color-palette.png" alt="Color palette Replate" width="700">
+</p>
+
 ## Arsitektur
 
 ```text
