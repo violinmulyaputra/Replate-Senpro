@@ -1,5 +1,9 @@
 # Replate
 
+<p align="center">
+  <img src="frontend/public/Replate-logo.png" alt="Logo Replate" width="240">
+</p>
+
 Replate adalah *food rescue marketplace* yang membantu restoran menjual makanan surplus yang masih layak konsumsi dengan harga lebih terjangkau. Data produksi dan surplus nantinya digunakan untuk memberi rekomendasi produksi dan mengurangi *food waste*.
 
 ## Arsitektur
