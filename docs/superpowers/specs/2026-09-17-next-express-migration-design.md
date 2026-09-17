@@ -33,9 +33,7 @@ Prisma stays on major version 7 because Prisma 8 does not yet support SQL Server
 
 ## Frontend
 
-The initial Next.js application provides `/`, `/login`, and `/register`, matching issue #21. The landing page presents Replate as a food-rescue marketplace. Auth pages are route-ready screens; wiring their forms is outside the current issue, which only requires project setup, routing, and REST API configuration.
-
-The interface uses a warm editorial food-market aesthetic, accessible contrast, visible keyboard focus, semantic navigation, and responsive layouts. Static export produces `frontend/out` for Azure Static Web Apps.
+The initial Next.js application provides unstyled placeholder routes at `/`, `/login`, and `/register`, matching issue #21. Product UI and authentication forms belong to later issues. Static export produces `frontend/out` for Azure Static Web Apps.
 
 ## Verification
 

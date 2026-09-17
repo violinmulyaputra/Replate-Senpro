@@ -145,9 +145,9 @@ Expected: schema validation, client generation, and compilation exit zero withou
 
 Set `output: 'export'`, use TypeScript/App Router, and expose a public API base URL example.
 
-- [x] **Step 2: Implement the three routes and shared shell**
+- [x] **Step 2: Implement the three placeholder routes**
 
-Build semantic, responsive pages with navigation, visible focus states, and Replate-specific Indonesian copy. Login and register remain route-ready because form behavior is outside issue #21.
+Add minimal, unstyled placeholder content for `/`, `/login`, and `/register`. Product UI and form behavior remain outside issue #21.
 
 - [x] **Step 3: Verify frontend**
 
