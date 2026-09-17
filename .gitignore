@@ -1,12 +1,10 @@
-# .NET build output
-[Bb]in/
-[Oo]bj/
-TestResults/
-
-# Frontend build output
+# Node.js build output
 node_modules/
 dist/
+.next/
+out/
 coverage/
+backend/src/generated/prisma/
 
 # Local IDE settings
 .vs/

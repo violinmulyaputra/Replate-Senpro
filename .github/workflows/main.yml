@@ -14,27 +14,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v6
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          dotnet-version: '10.0.x'
+          version: 10.33.2
 
-      - name: Restore .NET tools
-        run: dotnet tool restore
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
 
-      - name: Restore dependencies
-        run: dotnet restore backend/Replate.Api.Tests/Replate.Api.Tests.csproj
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: dotnet build backend/Replate.Api/Replate.Api.csproj --configuration Release --no-restore
+      - name: Validate and generate database client
+        run: pnpm --dir backend prisma:validate && pnpm --dir backend prisma:generate
+
+      - name: Lint
+        run: pnpm lint
 
       - name: Test
-        run: dotnet test backend/Replate.Api.Tests/Replate.Api.Tests.csproj --configuration Release --no-restore
+        run: pnpm test
 
-      - name: Verify database migration
-        env:
-          ConnectionStrings__DefaultConnection: Server=localhost;Database=Replate;Integrated Security=True;TrustServerCertificate=True
-          Jwt__Key: ci-only-key-that-is-at-least-32-characters-long
-        run: >-
-          dotnet ef migrations has-pending-model-changes --project backend/Replate.Api
-          --startup-project backend/Replate.Api --configuration Release --no-build
+      - name: Build
+        run: pnpm build

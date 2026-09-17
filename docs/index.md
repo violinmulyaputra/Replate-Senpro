@@ -18,6 +18,10 @@ Fakultas Teknik, Universitas Gadjah Mada
 #### Replate
 Replate merupakan web application marketplace yang membantu restoran dan usaha kuliner menjual makanan surplus yang masih layak konsumsi dengan harga lebih terjangkau. Selain membantu mengurangi food waste, Replate memanfaatkan AI untuk menganalisis data surplus dan memberikan rekomendasi jumlah produksi agar pelaku usaha dapat mengurangi kerugian serta mencegah kelebihan produksi di masa mendatang. Replate juga menyediakan sistem penilaian risiko keamanan makanan untuk membantu memastikan makanan yang ditawarkan masih layak dikonsumsi dan mengurangi risiko keracunan bagi konsumen.
 
+### Arsitektur Implementasi
+
+Replate menggunakan Next.js untuk frontend statis, Express.js untuk REST API, Prisma untuk akses data, dan Azure SQL sebagai database. Frontend direncanakan berjalan di Azure Static Web Apps, sedangkan backend berjalan di Azure App Service.
+
 ### Jenis Produk
 Web application marketplace
 

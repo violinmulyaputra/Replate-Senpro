@@ -1,71 +1,86 @@
-# Replate-Senpro
-Replate adalah aplikasi marketplace yang membantu restoran menjual makanan surplus yang masih layak konsumsi dengan harga lebih terjangkau. Selain membantu mengurangi food waste, Replate juga menyediakan analisis surplus dan rekomendasi jumlah produksi agar restoran dapat mengurangi kerugian serta mencegah kelebihan produksi di masa mendatang.
+# Replate
 
-## Struktur Project
+Replate adalah *food rescue marketplace* yang membantu restoran menjual makanan surplus yang masih layak konsumsi dengan harga lebih terjangkau. Data produksi dan surplus nantinya digunakan untuk memberi rekomendasi produksi dan mengurangi *food waste*.
+
+## Arsitektur
 
 ```text
 Replate-Senpro/
-├── frontend/        # Aplikasi web customer dan restaurant owner
-├── backend/         # REST API .NET dan integrasi database
-├── diagram/         # ERD dan use case diagram
-└── .github/         # Workflow CI GitHub Actions
+├── frontend/   # Next.js static frontend → Azure Static Web Apps
+├── backend/    # Express REST API + Prisma → Azure App Service
+├── diagram/    # ERD, use case, dan wireframe
+└── docs/       # Dokumentasi proyek
 ```
 
-Simpan kode frontend di `frontend/` dan kode API, business logic, serta migration database di `backend/`. Dokumentasi dan aset diagram disimpan di root atau `diagram/`.
+Database menggunakan SQL Server secara lokal dan Azure SQL saat deployment. Frontend hanya berkomunikasi dengan database melalui REST API.
 
-## Menjalankan Backend
+## Menjalankan aplikasi
+
+Gunakan Node.js 24 dan pnpm 10.
 
 ```bash
-export Jwt__Key="<secret minimal 32 karakter>"
-dotnet run --project backend/Replate.Api --urls http://localhost:5000
+pnpm install
+cp frontend/.env.example frontend/.env.local
+cp backend/.env.example backend/.env
+pnpm dev
 ```
 
-Health check tersedia di `GET http://localhost:5000/api/health`. Atur koneksi SQL Server atau Azure SQL melalui environment variable `ConnectionStrings__DefaultConnection` sebelum menggunakan database.
+Frontend berjalan di `http://localhost:3000` dan backend di `http://localhost:5000`. Isi `DATABASE_URL` dan ganti `JWT_SECRET` di `backend/.env` sebelum menjalankan backend.
 
-### Authentication
-
-- `POST /api/auth/register` menerima `name`, `email`, `password`, dan `role` (`Customer` atau `RestaurantOwner`).
-- `POST /api/auth/login` menerima `email` dan `password` lalu mengembalikan JWT.
-
-JWT berlaku selama 60 menit secara default. Ubah durasinya melalui `Jwt__ExpiresMinutes`.
-
-### Role-Based Access
-
-Kirim JWT melalui header `Authorization: Bearer <token>`. Endpoint berikut digunakan untuk memverifikasi pembatasan role:
-
-- `GET /api/access/customer` hanya untuk role `Customer`.
-- `GET /api/access/restaurant-owner` hanya untuk role `RestaurantOwner`.
-
-### Database Migration
+Perintah workspace:
 
 ```bash
-export ConnectionStrings__DefaultConnection="<SQL Server atau Azure SQL connection string>"
-dotnet tool restore
-dotnet ef database update --project backend/Replate.Api --startup-project backend/Replate.Api
+pnpm lint
+pnpm test
+pnpm build
 ```
 
-Migration awal membuat tabel dan relasi sesuai ERD Replate.
+Build frontend menghasilkan static export di `frontend/out`.
 
-## Use Case Diagram
+## REST API
+
+- `GET /api/health`
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/access/customer` untuk role `Customer`
+- `GET /api/access/restaurant-owner` untuk role `RestaurantOwner`
+
+Register menerima `name`, `email`, `password`, dan `role`. Kirim token dari register/login melalui header `Authorization: Bearer <token>` untuk mengakses endpoint berdasarkan role.
+
+## Database migration
+
+Schema Prisma mencakup seluruh entitas pada ERD Replate. Untuk Azure SQL atau SQL Server yang masih kosong:
+
+```bash
+pnpm --dir backend prisma:migrate
+```
+
+`DATABASE_URL` memakai format koneksi SQL Server:
+
+```text
+sqlserver://host:1433;database=Replate;user=user;password=password;encrypt=true
+```
+
+## Rencana deployment Azure
+
+- Static output Next.js: Azure Static Web Apps.
+- Express API: Azure App Service dengan Node.js 24.
+- Database: Azure SQL Database.
+- `NEXT_PUBLIC_API_URL` diarahkan ke URL App Service.
+- `FRONTEND_URL` pada backend diarahkan ke origin Static Web Apps untuk CORS.
+
+## Diagram
 
 ![Use Case Diagram Replate](diagram/Replate_Use_Case_Diagram.drawio.png)
 
-## Entity Relationship Diagram
-
 ![Entity Relationship Diagram Replate](diagram/Raplate_ERD.png)
-
-## Customer Low-Fidelity Wireframe
 
 ![Customer Low-Fidelity Wireframe Replate](diagram/Customer_Wireframe.png)
 
-## Restaurant Owner Low-Fidelity Wireframe
-
 ![Restaurant Owner Low-Fidelity Wireframe Replate](diagram/Restaurant_Owner_Wireframe.png)
 
-Kelompok 19
+Kelompok 19:
 
-Ketua Kelompok: Violin Mulya Putra - 24/534192/TK/59201
-
-Anggota 1: Putri Tajudin - 24/535824/TK/59469
-
-Anggota 2: Diaz Amantajati Susilo - 24/545483/TK/60678
+- Violin Mulya Putra — 24/534192/TK/59201
+- Putri Tajudin — 24/535824/TK/59469
+- Diaz Amantajati Susilo — 24/545483/TK/60678

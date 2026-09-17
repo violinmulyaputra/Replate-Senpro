@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlserver"
+}
+
+model User {
+  userId       Int          @id @default(autoincrement()) @map("UserId")
+  name         String       @db.NVarChar(100) @map("Name")
+  email        String       @unique(map: "IX_Users_Email") @db.NVarChar(255) @map("Email")
+  passwordHash String       @db.NVarChar(255) @map("PasswordHash")
+  role         String       @db.NVarChar(30) @map("Role")
+  createdAt    DateTime     @default(now()) @db.DateTimeOffset @map("CreatedAt")
+  restaurants  Restaurant[] @relation("RestaurantOwner")
+  carts        Cart[]       @relation("CustomerCarts")
+  orders       Order[]      @relation("CustomerOrders")
+
+  @@map("Users")
+}
+
+model Restaurant {
+  restaurantId Int      @id @default(autoincrement()) @map("RestaurantId")
+  ownerId      Int      @map("OwnerId")
+  name         String   @db.NVarChar(150) @map("Name")
+  address      String   @db.NVarChar(500) @map("Address")
+  phone        String   @db.NVarChar(30) @map("Phone")
+  createdAt    DateTime @default(now()) @db.DateTimeOffset @map("CreatedAt")
+  owner        User     @relation("RestaurantOwner", fields: [ownerId], references: [userId], onDelete: NoAction, onUpdate: NoAction)
+  menus        Menu[]
+  orders       Order[]
+
+  @@index([ownerId], map: "IX_Restaurants_OwnerId")
+  @@map("Restaurants")
+}
+
+model Menu {
+  menuId                    Int                        @id @default(autoincrement()) @map("MenuId")
+  restaurantId              Int                        @map("RestaurantId")
+  name                      String                     @db.NVarChar(150) @map("Name")
+  description               String                     @db.NVarChar(1000) @map("Description")
+  normalPrice               Decimal                    @db.Decimal(18, 2) @map("NormalPrice")
+  isActive                  Boolean                    @default(true) @map("IsActive")
+  createdAt                 DateTime                   @default(now()) @db.DateTimeOffset @map("CreatedAt")
+  restaurant                Restaurant                 @relation(fields: [restaurantId], references: [restaurantId], onDelete: NoAction, onUpdate: NoAction)
+  productionRecords         ProductionRecord[]
+  productionRecommendations ProductionRecommendation[]
+
+  @@index([restaurantId], map: "IX_Menus_RestaurantId")
+  @@map("Menus")
+}
+
+model ProductionRecord {
+  productionRecordId Int              @id @default(autoincrement()) @map("ProductionRecordId")
+  menuId             Int              @map("MenuId")
+  productionDate     DateTime         @db.Date @map("ProductionDate")
+  producedQuantity   Int              @map("ProducedQuantity")
+  soldQuantity       Int              @map("SoldQuantity")
+  surplusQuantity    Int              @map("SurplusQuantity")
+  recordedAt         DateTime         @default(now()) @db.DateTimeOffset @map("RecordedAt")
+  menu               Menu             @relation(fields: [menuId], references: [menuId], onDelete: NoAction, onUpdate: NoAction)
+  surplusListings    SurplusListing[]
+
+  @@unique([menuId, productionDate], map: "IX_ProductionRecords_MenuId_ProductionDate")
+  @@map("ProductionRecords")
+}
+
+model SurplusListing {
+  surplusListingId  Int              @id @default(autoincrement()) @map("SurplusListingId")
+  productionRecordId Int             @map("ProductionRecordId")
+  rescuePrice       Decimal          @db.Decimal(18, 2) @map("RescuePrice")
+  initialQuantity   Int              @map("InitialQuantity")
+  availableQuantity Int              @map("AvailableQuantity")
+  pickupStart       DateTime         @db.DateTimeOffset @map("PickupStart")
+  pickupEnd         DateTime         @db.DateTimeOffset @map("PickupEnd")
+  status            String           @db.NVarChar(30) @map("Status")
+  createdAt         DateTime         @default(now()) @db.DateTimeOffset @map("CreatedAt")
+  productionRecord  ProductionRecord @relation(fields: [productionRecordId], references: [productionRecordId], onDelete: NoAction, onUpdate: NoAction)
+  cartItems         CartItem[]
+  orderItems        OrderItem[]
+
+  @@index([productionRecordId], map: "IX_SurplusListings_ProductionRecordId")
+  @@map("SurplusListings")
+}
+
+model Cart {
+  cartId     Int        @id @default(autoincrement()) @map("CartId")
+  customerId Int        @map("CustomerId")
+  status     String     @db.NVarChar(30) @map("Status")
+  createdAt  DateTime   @default(now()) @db.DateTimeOffset @map("CreatedAt")
+  updatedAt  DateTime   @default(now()) @db.DateTimeOffset @map("UpdatedAt")
+  customer   User       @relation("CustomerCarts", fields: [customerId], references: [userId], onDelete: NoAction, onUpdate: NoAction)
+  items      CartItem[]
+
+  @@index([customerId], map: "IX_Carts_CustomerId")
+  @@map("Carts")
+}
+
+model CartItem {
+  cartItemId      Int            @id @default(autoincrement()) @map("CartItemId")
+  cartId          Int            @map("CartId")
+  surplusListingId Int           @map("SurplusListingId")
+  quantity        Int            @map("Quantity")
+  cart            Cart           @relation(fields: [cartId], references: [cartId], onDelete: Cascade, onUpdate: NoAction)
+  surplusListing  SurplusListing @relation(fields: [surplusListingId], references: [surplusListingId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([cartId, surplusListingId], map: "IX_CartItems_CartId_SurplusListingId")
+  @@index([surplusListingId], map: "IX_CartItems_SurplusListingId")
+  @@map("CartItems")
+}
+
+model Order {
+  orderId      Int         @id @default(autoincrement()) @map("OrderId")
+  customerId   Int         @map("CustomerId")
+  restaurantId Int         @map("RestaurantId")
+  status       String      @db.NVarChar(30) @map("Status")
+  totalAmount  Decimal     @db.Decimal(18, 2) @map("TotalAmount")
+  orderedAt    DateTime    @default(now()) @db.DateTimeOffset @map("OrderedAt")
+  customer     User        @relation("CustomerOrders", fields: [customerId], references: [userId], onDelete: NoAction, onUpdate: NoAction)
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [restaurantId], onDelete: NoAction, onUpdate: NoAction)
+  items        OrderItem[]
+  pickup       Pickup?
+
+  @@index([customerId], map: "IX_Orders_CustomerId")
+  @@index([restaurantId], map: "IX_Orders_RestaurantId")
+  @@map("Orders")
+}
+
+model OrderItem {
+  orderItemId     Int            @id @default(autoincrement()) @map("OrderItemId")
+  orderId         Int            @map("OrderId")
+  surplusListingId Int           @map("SurplusListingId")
+  quantity        Int            @map("Quantity")
+  unitPrice       Decimal        @db.Decimal(18, 2) @map("UnitPrice")
+  subtotal        Decimal        @db.Decimal(18, 2) @map("Subtotal")
+  order           Order          @relation(fields: [orderId], references: [orderId], onDelete: Cascade, onUpdate: NoAction)
+  surplusListing  SurplusListing @relation(fields: [surplusListingId], references: [surplusListingId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([orderId], map: "IX_OrderItems_OrderId")
+  @@index([surplusListingId], map: "IX_OrderItems_SurplusListingId")
+  @@map("OrderItems")
+}
+
+model Pickup {
+  pickupId         Int       @id @default(autoincrement()) @map("PickupId")
+  orderId          Int       @unique(map: "IX_Pickups_OrderId") @map("OrderId")
+  pickupCode       String    @unique(map: "IX_Pickups_PickupCode") @db.NVarChar(20) @map("PickupCode")
+  estimatedPickupAt DateTime @db.DateTimeOffset @map("EstimatedPickupAt")
+  verifiedAt       DateTime? @db.DateTimeOffset @map("VerifiedAt")
+  status           String    @db.NVarChar(30) @map("Status")
+  order            Order     @relation(fields: [orderId], references: [orderId], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("Pickups")
+}
+
+model ProductionRecommendation {
+  productionRecommendationId Int      @id @default(autoincrement()) @map("ProductionRecommendationId")
+  menuId                     Int      @map("MenuId")
+  targetDate                 DateTime @db.Date @map("TargetDate")
+  predictedDemand            Decimal  @db.Decimal(18, 2) @map("PredictedDemand")
+  recommendedQuantity        Int      @map("RecommendedQuantity")
+  insight                    String   @db.NVarChar(1000) @map("Insight")
+  modelVersion               String   @db.NVarChar(50) @map("ModelVersion")
+  generatedAt                DateTime @default(now()) @db.DateTimeOffset @map("GeneratedAt")
+  menu                       Menu     @relation(fields: [menuId], references: [menuId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([menuId, targetDate], map: "IX_ProductionRecommendations_MenuId_TargetDate")
+  @@map("ProductionRecommendations")
+}
