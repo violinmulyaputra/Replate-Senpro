@@ -1,5 +1,4 @@
-import RoleHome from '../RoleHome'
+import Marketplace from './Marketplace'
+import './marketplace.css'
 
-export default function CustomerHome() {
-  return <RoleHome role="Customer" />
-}
+export default function CustomerHome() { return <Marketplace /> }
