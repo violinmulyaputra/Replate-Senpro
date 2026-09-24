@@ -4,6 +4,7 @@ import express, { type RequestHandler } from 'express'
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
 import { z } from 'zod'
+import { addRestaurantRoutes, type RestaurantStore } from './restaurant.js'
 import {
   createToken,
   hashPassword,
@@ -42,6 +43,8 @@ type Dependencies = {
   users: UserStore
   passwordResets?: PasswordResetStore
   sendPasswordReset?: (email: string, resetUrl: string) => Promise<void>
+  restaurants?: RestaurantStore
+  uploadDir?: string
   jwt: JwtConfig
   frontendUrl: string
   authRateLimit?: number
@@ -87,7 +90,7 @@ function authResponse(user: User, jwtConfig: JwtConfig) {
   }
 }
 
-export function createApp({ users, passwordResets, sendPasswordReset, jwt: jwtConfig, frontendUrl, authRateLimit = 10 }: Dependencies) {
+export function createApp({ users, passwordResets, sendPasswordReset, restaurants, uploadDir, jwt: jwtConfig, frontendUrl, authRateLimit = 10 }: Dependencies) {
   if (Buffer.byteLength(jwtConfig.secret, 'utf8') < 32) throw new Error('JWT_SECRET must contain at least 32 bytes.')
   if (!jwtConfig.issuer || !jwtConfig.audience || jwtConfig.expiresMinutes < 1 || jwtConfig.expiresMinutes > 1440) {
     throw new Error('JWT issuer, audience, or expiry configuration is invalid.')
@@ -196,6 +199,9 @@ export function createApp({ users, passwordResets, sendPasswordReset, jwt: jwtCo
     try {
       const payload = readToken(token, jwtConfig)
       if (payload.role !== role) return response.status(403).json(problem(403, 'Forbidden.'))
+      const userId = Number(payload.sub)
+      if (!Number.isSafeInteger(userId) || userId < 1) return response.status(401).json(problem(401, 'Unauthorized.'))
+      response.locals.ownerId = userId
       next()
     } catch {
       return response.status(401).json(problem(401, 'Unauthorized.'))
@@ -209,9 +215,14 @@ export function createApp({ users, passwordResets, sendPasswordReset, jwt: jwtCo
     response.json({ role: 'RestaurantOwner' })
   })
 
+  if (restaurants) addRestaurantRoutes(app, restaurants, requireRole('RestaurantOwner'), uploadDir ?? 'uploads')
+
   app.use((error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
     if (error instanceof SyntaxError && 'status' in error && error.status === 400) {
       return response.status(400).json(problem(400, 'Invalid JSON.'))
+    }
+    if (typeof error === 'object' && error !== null && 'type' in error && error.type === 'entity.too.large') {
+      return response.status(413).json(problem(413, 'Image is too large.'))
     }
     response.status(500).json(problem(500, 'An unexpected error occurred.'))
   })

@@ -5,6 +5,7 @@ dist/
 out/
 coverage/
 backend/src/generated/prisma/
+backend/uploads/
 
 # Local IDE settings
 .vs/

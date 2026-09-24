@@ -4,10 +4,12 @@ import { createDatabase } from './database.js'
 import { createMailer } from './mailer.js'
 
 const config = loadConfig()
-const { prisma, users, passwordResets } = createDatabase(config.databaseUrl)
+const { prisma, users, passwordResets, restaurants } = createDatabase(config.databaseUrl)
 const app = createApp({
   users,
   passwordResets,
+  restaurants,
+  uploadDir: config.uploadDir,
   ...(config.smtp ? { sendPasswordReset: createMailer(config.smtp) } : {}),
   jwt: config.jwt,
   frontendUrl: config.frontendUrl,
