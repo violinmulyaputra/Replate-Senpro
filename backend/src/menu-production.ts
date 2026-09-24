@@ -66,7 +66,7 @@ export type MenuStore = {
     menuId: number,
     date: string,
     input: ProductionInput,
-  ): Promise<ProductionRecord | null>
+  ): Promise<ProductionRecord | null | 'invalid'>
   gallery(ownerId: number): Promise<string[]>
 }
 
@@ -237,6 +237,8 @@ export function addMenuRoutes(
           day,
           parsed.data,
         )
+        if (record === 'invalid')
+          return response.status(400).json({ title: 'Surplus cannot be below allocated listing quantity.' })
         return record
           ? response.json(record)
           : response.status(404).json({ title: 'Menu not found.' })

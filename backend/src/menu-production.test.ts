@@ -64,6 +64,7 @@ it('scopes menu writes to the owner and rejects surplus beyond production', asyn
         )
       )
         return null
+      if (records.length && input.surplusQuantity < 2) return 'invalid'
       const record = {
         ...input,
         productionRecordId: 1,
@@ -141,6 +142,14 @@ it('scopes menu writes to the owner and rejects surplus beyond production', asyn
     ).status,
   ).toBe(200)
   expect(records).toHaveLength(1)
+  expect(
+    (
+      await request(app)
+        .put('/api/owner/menus/1/production/2026-09-24')
+        .set('Authorization', auth(1))
+        .send({ producedQuantity: 10, soldQuantity: 8, surplusQuantity: 1 })
+    ).status,
+  ).toBe(400)
 
   const png = Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9uN1sAAAAASUVORK5CYII=',

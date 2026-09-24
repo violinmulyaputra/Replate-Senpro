@@ -76,6 +76,32 @@ Build frontend menghasilkan static export di `frontend/out`.
 
 Register menerima `name`, `email`, `password`, dan `role`. Kirim token dari register/login melalui header `Authorization: Bearer <token>` untuk mengakses endpoint berdasarkan role.
 
+### Surplus listing owner
+
+Semua endpoint berikut memerlukan token `RestaurantOwner`. ID restoran dan listing tetap diperiksa terhadap owner di token; data owner lain menghasilkan `404`.
+
+- `GET /api/owner/restaurants/:restaurantId/listings` — daftar listing restoran
+- `GET /api/owner/listings/:listingId` — detail listing
+- `POST /api/owner/restaurants/:restaurantId/listings` — buat listing dari catatan produksi
+- `PATCH /api/owner/listings/:listingId` — ubah harga, jumlah awal, atau jendela pickup
+- `DELETE /api/owner/listings/:listingId` — tutup listing tanpa menghapus histori order
+
+Contoh `POST` (respons `201`):
+
+```json
+{
+  "productionRecordId": 12,
+  "rescuePrice": 15000,
+  "initialQuantity": 5,
+  "pickupStart": "2026-09-25T10:00:00+07:00",
+  "pickupEnd": "2026-09-25T12:00:00+07:00",
+  "pickupInstructions": "Bawa tas sendiri dan tunjukkan kode pickup.",
+  "status": "Active"
+}
+```
+
+Respons memuat `surplusListingId`, `restaurantId`, `menuId`, `menuName`, `availableQuantity`, `status` (`Active`, `Draft`, atau `Closed`), dan field input. Kirim `status: "Draft"` untuk menyimpan sebelum publikasi, lalu `PATCH` dengan `status: "Active"` untuk menerbitkannya. Jumlah listing aktif ditambah jumlah yang sudah terjual dari listing tertutup tidak boleh melebihi `surplusQuantity` pada catatan produksi. Saat mengubah `initialQuantity`, stok tersedia disesuaikan tanpa menghapus jumlah yang sudah terjual. Jendela pickup harus dimulai di masa depan dan berakhir setelah waktu mulai. Input tidak valid menghasilkan `400`, token tidak ada/salah role menghasilkan `401`/`403`, dan data yang bukan milik owner menghasilkan `404`.
+
 ## Database migration
 
 Schema Prisma mencakup seluruh entitas pada ERD Replate. Untuk Azure SQL atau SQL Server yang masih kosong:

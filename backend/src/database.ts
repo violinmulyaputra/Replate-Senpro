@@ -1,7 +1,6 @@
 import { PrismaMssql } from '@prisma/adapter-mssql'
 import { DuplicateEmailError, type NewUser, type PasswordResetStore, type UserStore } from './app.js'
-import { PrismaClient } from './generated/prisma/client.js'
-import type { Prisma } from './generated/prisma/client.js'
+import { Prisma, PrismaClient } from './generated/prisma/client.js'
 import type { ProfileChanges, RestaurantRecord, RestaurantStore } from './restaurant.js'
 
 function restaurantData(input: ProfileChanges): Prisma.RestaurantUncheckedUpdateManyInput {
@@ -23,6 +22,7 @@ function restaurantRecord(record: Awaited<ReturnType<PrismaClient['restaurant'][
 }
 
 import type { MenuChanges, MenuRecord, MenuStore, ProductionRecord } from './menu-production.js'
+import type { ListingRecord, ListingStore } from './surplus-listing.js'
 
 function menuData(input: MenuChanges): Prisma.MenuUncheckedUpdateInput {
   const { allergens, dietTags, photos, ...fields } = input
@@ -43,6 +43,19 @@ function menuRecord(menu: MenuWithPhotos): MenuRecord {
 function productionRecord(record: { productionRecordId: number; menuId: number; productionDate: Date; producedQuantity: number; soldQuantity: number; surplusQuantity: number; recordedAt: Date }): ProductionRecord {
   return { ...record, productionDate: record.productionDate.toISOString().slice(0, 10) }
 }
+
+type ListingWithMenu = Prisma.SurplusListingGetPayload<{ include: { productionRecord: { include: { menu: true } } } }>
+function listingRecord(listing: ListingWithMenu): ListingRecord {
+  const { productionRecord, rescuePrice, pickupStart, pickupEnd, ...fields } = listing
+  return { ...fields, rescuePrice: rescuePrice.toNumber(), pickupStart: pickupStart.toISOString(),
+    pickupEnd: pickupEnd.toISOString(), restaurantId: productionRecord.menu.restaurantId,
+    menuId: productionRecord.menuId, menuName: productionRecord.menu.name,
+    productionDate: productionRecord.productionDate.toISOString().slice(0, 10),
+    normalPrice: productionRecord.menu.normalPrice.toNumber(),
+    status: listing.status as ListingRecord['status'] }
+}
+
+const listingInclude = { productionRecord: { include: { menu: true } } } as const
 
 export function createDatabase(databaseUrl: string) {
   const prisma = new PrismaClient({ adapter: new PrismaMssql(databaseUrl) })
@@ -128,15 +141,88 @@ export function createDatabase(databaseUrl: string) {
       return records.map(productionRecord)
     },
     async upsertProduction(ownerId, menuId, date, input) {
-      if (!await prisma.menu.findFirst({ where: { menuId, restaurant: { ownerId } }, select: { menuId: true } })) return null
-      const record = await prisma.productionRecord.upsert({ where: { menuId_productionDate: { menuId, productionDate: new Date(`${date}T00:00:00.000Z`) } },
-        create: { menuId, productionDate: new Date(`${date}T00:00:00.000Z`), ...input }, update: input })
-      return productionRecord(record)
+      return prisma.$transaction(async (tx) => {
+        if (!await tx.menu.findFirst({ where: { menuId, restaurant: { ownerId } }, select: { menuId: true } })) return null
+        const productionDate = new Date(`${date}T00:00:00.000Z`)
+        const existing = await tx.productionRecord.findUnique({ where: { menuId_productionDate: { menuId, productionDate } }, select: { productionRecordId: true } })
+        if (existing) {
+          const listings = await tx.surplusListing.findMany({ where: { productionRecordId: existing.productionRecordId }, select: { initialQuantity: true, availableQuantity: true, status: true } })
+          const reserved = listings.reduce((total, row) => total + (row.status === 'Active' ? row.initialQuantity : row.initialQuantity - row.availableQuantity), 0)
+          if (input.surplusQuantity < reserved) return 'invalid'
+        }
+        const record = await tx.productionRecord.upsert({ where: { menuId_productionDate: { menuId, productionDate } },
+          create: { menuId, productionDate, ...input }, update: input })
+        return productionRecord(record)
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
     },
     async gallery(ownerId) {
       const photos = await prisma.menuPhoto.findMany({ where: { menu: { restaurant: { ownerId } } }, select: { url: true }, distinct: ['url'] })
       return photos.map((photo) => photo.url)
     },
   }
-  return { prisma, users, passwordResets, restaurants, menus }
+  const listings: ListingStore = {
+    async list(ownerId, restaurantId) {
+      if (!await prisma.restaurant.findFirst({ where: { restaurantId, ownerId }, select: { restaurantId: true } })) return null
+      const rows = await prisma.surplusListing.findMany({ where: { productionRecord: { menu: { restaurantId } } }, include: listingInclude, orderBy: { createdAt: 'desc' } })
+      return rows.map(listingRecord)
+    },
+    async get(ownerId, listingId) {
+      const row = await prisma.surplusListing.findFirst({ where: { surplusListingId: listingId, productionRecord: { menu: { restaurant: { ownerId } } } }, include: listingInclude })
+      return row ? listingRecord(row) : null
+    },
+    async create(ownerId, restaurantId, input) {
+      return prisma.$transaction(async (tx) => {
+        const production = await tx.productionRecord.findFirst({
+          where: { productionRecordId: input.productionRecordId, menu: { restaurant: { restaurantId, ownerId }, isActive: true } },
+          select: { surplusQuantity: true, menu: { select: { normalPrice: true } } },
+        })
+        if (!production) return null
+        if (input.rescuePrice >= production.menu.normalPrice.toNumber()) return 'invalid'
+        const existing = await tx.surplusListing.findMany({ where: { productionRecordId: input.productionRecordId }, select: { initialQuantity: true, availableQuantity: true, status: true } })
+        const reserved = existing.reduce((total, row) => total + (row.status === 'Active' ? row.initialQuantity : row.initialQuantity - row.availableQuantity), 0)
+        if (input.status !== 'Draft' && reserved + input.initialQuantity > production.surplusQuantity) return 'invalid'
+        const row = await tx.surplusListing.create({ data: {
+          productionRecordId: input.productionRecordId, rescuePrice: input.rescuePrice,
+          initialQuantity: input.initialQuantity, availableQuantity: input.initialQuantity,
+          pickupStart: new Date(input.pickupStart), pickupEnd: new Date(input.pickupEnd),
+          pickupInstructions: input.pickupInstructions ?? null, status: input.status ?? 'Active',
+        }, include: listingInclude })
+        return listingRecord(row)
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
+    },
+    async update(ownerId, listingId, input) {
+      return prisma.$transaction(async (tx) => {
+        const current = await tx.surplusListing.findFirst({ where: { surplusListingId: listingId, productionRecord: { menu: { restaurant: { ownerId } } } }, include: listingInclude })
+        if (!current) return null
+        if (current.status === 'Closed') return 'invalid'
+        if ((input.rescuePrice ?? current.rescuePrice.toNumber()) >= current.productionRecord.menu.normalPrice.toNumber()) return 'invalid'
+        const sold = current.initialQuantity - current.availableQuantity
+        if (sold > 0 && (input.pickupStart !== undefined || input.pickupEnd !== undefined)) return 'invalid'
+        const initialQuantity = input.initialQuantity ?? current.initialQuantity
+        if (initialQuantity < sold) return 'invalid'
+        const start = input.pickupStart ?? current.pickupStart.toISOString()
+        const end = input.pickupEnd ?? current.pickupEnd.toISOString()
+        if (new Date(start).getTime() <= Date.now() || new Date(end).getTime() <= new Date(start).getTime()) return 'invalid'
+        const siblings = await tx.surplusListing.findMany({ where: { productionRecordId: current.productionRecordId, surplusListingId: { not: listingId } }, select: { initialQuantity: true, availableQuantity: true, status: true } })
+        const reserved = siblings.reduce((total, row) => total + (row.status === 'Active' ? row.initialQuantity : row.initialQuantity - row.availableQuantity), 0)
+        const status = input.status ?? current.status
+        if (status === 'Active' && reserved + initialQuantity > current.productionRecord.surplusQuantity) return 'invalid'
+        const row = await tx.surplusListing.update({ where: { surplusListingId: listingId }, data: {
+          ...(input.rescuePrice === undefined ? {} : { rescuePrice: input.rescuePrice }),
+          initialQuantity, availableQuantity: initialQuantity - sold,
+          pickupStart: new Date(start), pickupEnd: new Date(end),
+          ...(input.pickupInstructions === undefined ? {} : { pickupInstructions: input.pickupInstructions }),
+          status,
+        }, include: listingInclude })
+        return listingRecord(row)
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
+    },
+    async close(ownerId, listingId) {
+      const result = await prisma.surplusListing.updateMany({ where: { surplusListingId: listingId, productionRecord: { menu: { restaurant: { ownerId } } } }, data: { status: 'Closed' } })
+      if (!result.count) return null
+      const row = await prisma.surplusListing.findUniqueOrThrow({ where: { surplusListingId: listingId }, include: listingInclude })
+      return listingRecord(row)
+    },
+  }
+  return { prisma, users, passwordResets, restaurants, menus, listings }
 }

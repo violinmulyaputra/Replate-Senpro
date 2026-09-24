@@ -5,7 +5,7 @@ import { createMailer } from './mailer.js'
 import path from 'node:path'
 
 const config = loadConfig()
-const { prisma, users, passwordResets, restaurants, menus } = createDatabase(config.databaseUrl)
+const { prisma, users, passwordResets, restaurants, menus, listings } = createDatabase(config.databaseUrl)
 const app = createApp({
   users,
   passwordResets,
@@ -13,6 +13,7 @@ const app = createApp({
   uploadDir: config.uploadDir,
   menus,
   menuUploadDir: path.resolve(config.menuUploadDir),
+  listings,
   ...(config.smtp ? { sendPasswordReset: createMailer(config.smtp) } : {}),
   jwt: config.jwt,
   frontendUrl: config.frontendUrl,
