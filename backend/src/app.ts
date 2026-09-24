@@ -1,4 +1,5 @@
 import cors from 'cors'
+import { createHash, randomBytes } from 'node:crypto'
 import express, { type RequestHandler } from 'express'
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
@@ -17,6 +18,7 @@ export type User = {
   userId: number
   name: string
   email: string
+  phone: string | null
   passwordHash: string
   role: Role
   createdAt: Date
@@ -29,10 +31,17 @@ export type UserStore = {
   create(input: NewUser): Promise<User>
 }
 
+export type PasswordResetStore = {
+  create(userId: number, tokenHash: string, expiresAt: Date): Promise<void>
+  consume(tokenHash: string, passwordHash: string, now: Date): Promise<boolean>
+}
+
 export class DuplicateEmailError extends Error {}
 
 type Dependencies = {
   users: UserStore
+  passwordResets?: PasswordResetStore
+  sendPasswordReset?: (email: string, resetUrl: string) => Promise<void>
   jwt: JwtConfig
   frontendUrl: string
   authRateLimit?: number
@@ -41,6 +50,7 @@ type Dependencies = {
 const registerSchema = z.object({
   name: z.string().trim().min(2).max(100),
   email: z.email().max(255),
+  phone: z.string().trim().min(6).max(30).optional(),
   password: z.string().min(8).max(128),
   role: z.string(),
 })
@@ -49,6 +59,16 @@ const loginSchema = z.object({
   email: z.email().max(255),
   password: z.string().min(8).max(128),
 })
+
+const forgotPasswordSchema = z.object({ email: z.email().max(255) })
+const resetPasswordSchema = z.object({
+  token: z.string().regex(/^[a-f0-9]{64}$/),
+  password: z.string().min(8).max(128),
+})
+
+function tokenHash(token: string) {
+  return createHash('sha256').update(token).digest('hex')
+}
 
 function problem(status: number, title: string) {
   return { status, title }
@@ -60,13 +80,14 @@ function authResponse(user: User, jwtConfig: JwtConfig) {
     userId: user.userId,
     name: user.name,
     email: user.email,
+    phone: user.phone,
     role: user.role,
     token,
     expiresAt,
   }
 }
 
-export function createApp({ users, jwt: jwtConfig, frontendUrl, authRateLimit = 10 }: Dependencies) {
+export function createApp({ users, passwordResets, sendPasswordReset, jwt: jwtConfig, frontendUrl, authRateLimit = 10 }: Dependencies) {
   if (Buffer.byteLength(jwtConfig.secret, 'utf8') < 32) throw new Error('JWT_SECRET must contain at least 32 bytes.')
   if (!jwtConfig.issuer || !jwtConfig.audience || jwtConfig.expiresMinutes < 1 || jwtConfig.expiresMinutes > 1440) {
     throw new Error('JWT issuer, audience, or expiry configuration is invalid.')
@@ -102,6 +123,7 @@ export function createApp({ users, jwt: jwtConfig, frontendUrl, authRateLimit = 
       const user = await users.create({
         name: parsed.data.name,
         email,
+        phone: parsed.data.phone ?? null,
         passwordHash: await hashPassword(parsed.data.password),
         role,
       })
@@ -124,6 +146,48 @@ export function createApp({ users, jwt: jwtConfig, frontendUrl, authRateLimit = 
       return response.status(401).json(problem(401, 'Invalid email or password.'))
     }
     return response.json(authResponse(user, jwtConfig))
+  })
+
+  app.post('/api/auth/forgot-password', authLimiter, async (request, response, next) => {
+    try {
+      const parsed = forgotPasswordSchema.safeParse(request.body)
+      if (!parsed.success) return response.status(400).json(problem(400, 'Invalid email.'))
+      if (!passwordResets || !sendPasswordReset) return response.status(503).json(problem(503, 'Password reset is unavailable.'))
+
+      const user = await users.findByEmail(parsed.data.email.trim().toLowerCase())
+      if (user) {
+        const token = randomBytes(32).toString('hex')
+        await passwordResets.create(user.userId, tokenHash(token), new Date(Date.now() + 30 * 60_000))
+        const url = new URL('/reset-password/', frontendUrl)
+        url.searchParams.set('token', token)
+        try {
+          await sendPasswordReset(user.email, url.toString())
+        } catch (error) {
+          // Keep the response identical for known and unknown addresses.
+          console.error('Password reset email failed:', error)
+        }
+      }
+      return response.status(202).json({ status: 'accepted' })
+    } catch (error) {
+      next(error)
+    }
+  })
+
+  app.post('/api/auth/reset-password', authLimiter, async (request, response, next) => {
+    try {
+      const parsed = resetPasswordSchema.safeParse(request.body)
+      if (!parsed.success) return response.status(400).json(problem(400, 'Invalid reset data.'))
+      if (!passwordResets) return response.status(503).json(problem(503, 'Password reset is unavailable.'))
+      const updated = await passwordResets.consume(
+        tokenHash(parsed.data.token),
+        await hashPassword(parsed.data.password),
+        new Date(),
+      )
+      if (!updated) return response.status(400).json(problem(400, 'Reset link is invalid or expired.'))
+      return response.status(204).end()
+    } catch (error) {
+      next(error)
+    }
   })
 
   const requireRole = (role: Role): RequestHandler => (request, response, next) => {

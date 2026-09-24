@@ -11,14 +11,29 @@ model User {
   userId       Int          @id @default(autoincrement()) @map("UserId")
   name         String       @db.NVarChar(100) @map("Name")
   email        String       @unique(map: "IX_Users_Email") @db.NVarChar(255) @map("Email")
+  phone        String?      @db.NVarChar(30) @map("Phone")
   passwordHash String       @db.NVarChar(255) @map("PasswordHash")
   role         String       @db.NVarChar(30) @map("Role")
   createdAt    DateTime     @default(now()) @db.DateTimeOffset @map("CreatedAt")
   restaurants  Restaurant[] @relation("RestaurantOwner")
   carts        Cart[]       @relation("CustomerCarts")
   orders       Order[]      @relation("CustomerOrders")
+  passwordResetTokens PasswordResetToken[]
 
   @@map("Users")
+}
+
+model PasswordResetToken {
+  passwordResetTokenId Int       @id @default(autoincrement()) @map("PasswordResetTokenId")
+  userId               Int       @map("UserId")
+  tokenHash            String    @unique(map: "IX_PasswordResetTokens_TokenHash") @db.Char(64) @map("TokenHash")
+  expiresAt            DateTime  @db.DateTimeOffset @map("ExpiresAt")
+  usedAt               DateTime? @db.DateTimeOffset @map("UsedAt")
+  createdAt            DateTime  @default(now()) @db.DateTimeOffset @map("CreatedAt")
+  user                 User      @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([userId], map: "IX_PasswordResetTokens_UserId")
+  @@map("PasswordResetTokens")
 }
 
 model Restaurant {
