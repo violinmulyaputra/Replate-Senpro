@@ -71,8 +71,11 @@ Build frontend menghasilkan static export di `frontend/out`.
 - `GET /api/health`
 - `POST /api/auth/register`
 - `POST /api/auth/login`
+- `POST /api/auth/forgot-password` dan `POST /api/auth/reset-password`
 - `GET /api/access/customer` untuk role `Customer`
 - `GET /api/access/restaurant-owner` untuk role `RestaurantOwner`
+- `GET /api/marketplace/listings` dan `GET /api/marketplace/listings/:listingId`
+- `POST /api/customer/orders` untuk checkout listing surplus, serta `GET /api/customer/orders` dan `GET /api/customer/orders/:orderId` untuk riwayat/detail
 
 Register menerima `name`, `email`, `password`, dan `role`. Kirim token dari register/login melalui header `Authorization: Bearer <token>` untuk mengakses endpoint berdasarkan role.
 
