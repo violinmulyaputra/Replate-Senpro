@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken'
 import request from 'supertest'
 import { expect, it } from 'vitest'
 import { createApp, type UserStore } from './app.js'
-import type { CustomerOrder, MarketplaceListing, MarketplaceStore } from './marketplace.js'
+import type { CustomerOrder, MarketplaceListing, MarketplaceStore, OwnerOrder } from './marketplace.js'
 
 const config = {
   secret: 'test-only-key-that-is-at-least-32-characters-long',
@@ -24,9 +24,11 @@ it('lists public listings and scopes checkout and order history to the customer'
   }
   const order: CustomerOrder = {
     orderId: 7, status: 'Pending', totalAmount: 30000, orderedAt: '2026-09-25T10:00:00.000Z',
-    pickupCode: 'A1B2C3D4', estimatedPickupAt: listing.pickupStart,
+    pickupCode: 'A1B2C3D4E5F6', estimatedPickupAt: listing.pickupStart,
     items: [{ menuName: listing.menuName, quantity: 2, unitPrice: listing.rescuePrice, subtotal: 30000 }],
   }
+  const ownerOrder: OwnerOrder = { ...order, pickupCode: null, customerName: 'Test Customer', restaurantName: 'Dapur Pagi', pickupStatus: 'Pending', verifiedAt: null }
+  let verified = false
   const store: MarketplaceStore = {
     listListings: async (filter) => filter.category && filter.category !== listing.category ? [] : [listing],
     getListing: async (listingId) => listingId === listing.surplusListingId ? listing : null,
@@ -35,6 +37,17 @@ it('lists public listings and scopes checkout and order history to the customer'
       : null,
     listOrders: async (customerId) => customerId === 1 ? [order] : [],
     getOrder: async (customerId, orderId) => customerId === 1 && orderId === 7 ? order : null,
+    listOwnerOrders: async (ownerId) => ownerId === 10 ? [ownerOrder] : [],
+    verifyPickup: async (ownerId, orderId, pickupCode) => {
+      if (ownerId !== 10 || orderId !== 7) return 'not-found'
+      if (pickupCode !== order.pickupCode) return 'invalid-code'
+      if (verified) return 'already-verified'
+      verified = true
+      ownerOrder.status = 'Completed'
+      ownerOrder.pickupStatus = 'Verified'
+      ownerOrder.verifiedAt = '2026-09-26T10:00:00.000Z'
+      return ownerOrder
+    },
   }
   const app = createApp({ users, jwt: config, frontendUrl: 'http://localhost:3000', marketplace: store })
 
@@ -49,9 +62,24 @@ it('lists public listings and scopes checkout and order history to the customer'
 
   const checkout = await request(app).post('/api/customer/orders').set('Authorization', auth(1, 'Customer')).send({ items: [{ surplusListingId: 3, quantity: 1 }, { surplusListingId: 4, quantity: 1 }] })
   expect(checkout.status).toBe(201)
-  expect(checkout.body).toMatchObject({ orderId: 7, totalAmount: 30000, pickupCode: 'A1B2C3D4' })
+  expect(checkout.body).toMatchObject({ orderId: 7, totalAmount: 30000, pickupCode: 'A1B2C3D4E5F6' })
   expect(checkout.body.items).toHaveLength(2)
   expect((await request(app).get('/api/customer/orders').set('Authorization', auth(2, 'Customer'))).body).toEqual([])
   expect((await request(app).get('/api/customer/orders/7').set('Authorization', auth(2, 'Customer'))).status).toBe(404)
   expect((await request(app).get('/api/customer/orders/7').set('Authorization', auth(1, 'Customer'))).body.orderId).toBe(7)
+
+  expect((await request(app).get('/api/owner/orders')).status).toBe(401)
+  expect((await request(app).get('/api/owner/orders').set('Authorization', auth(1, 'Customer'))).status).toBe(403)
+  expect((await request(app).get('/api/owner/orders').set('Authorization', auth(11, 'RestaurantOwner'))).body).toEqual([])
+  const ownerOrders = await request(app).get('/api/owner/orders').set('Authorization', auth(10, 'RestaurantOwner'))
+  expect(ownerOrders.body[0]).toMatchObject({ orderId: 7, customerName: 'Test Customer', pickupCode: null, pickupStatus: 'Pending' })
+  const verifyUrl = '/api/owner/orders/7/verify-pickup'
+  const badCode = await request(app).post(verifyUrl).set('Authorization', auth(10, 'RestaurantOwner')).send({ pickupCode: 'FFFFFFFFFFFF' })
+  expect(badCode.status).toBe(400)
+  expect(badCode.body.title).toBe('Pickup code is invalid.')
+  expect((await request(app).post(verifyUrl).set('Authorization', auth(11, 'RestaurantOwner')).send({ pickupCode: order.pickupCode })).status).toBe(404)
+  const verifiedResponse = await request(app).post(verifyUrl).set('Authorization', auth(10, 'RestaurantOwner')).send({ pickupCode: order.pickupCode })
+  expect(verifiedResponse.status).toBe(200)
+  expect(verifiedResponse.body).toMatchObject({ status: 'Completed', pickupStatus: 'Verified', verifiedAt: expect.any(String) })
+  expect((await request(app).post(verifyUrl).set('Authorization', auth(10, 'RestaurantOwner')).send({ pickupCode: order.pickupCode })).status).toBe(409)
 })

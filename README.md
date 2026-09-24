@@ -79,6 +79,15 @@ Build frontend menghasilkan static export di `frontend/out`.
 
 Register menerima `name`, `email`, `password`, dan `role`. Kirim token dari register/login melalui header `Authorization: Bearer <token>` untuk mengakses endpoint berdasarkan role.
 
+Endpoint surplus dan order:
+
+- `GET /api/marketplace/listings` dan `GET /api/marketplace/listings/:listingId` untuk melihat listing surplus yang tersedia.
+- `POST /api/customer/orders`, `GET /api/customer/orders`, dan `GET /api/customer/orders/:orderId` untuk checkout serta status order milik customer.
+- `GET /api/owner/orders` untuk melihat order masuk dari restoran milik owner.
+- `POST /api/owner/orders/:orderId/verify-pickup` menerima `{ "pickupCode": "A1B2C3D4E5F6" }` untuk memverifikasi pickup.
+
+Kode pickup hanya dapat dipakai sekali. Keberhasilan mengubah status pickup menjadi `Verified`, mengisi `verifiedAt`, dan mengubah order dari `Pending` ke `Completed`. Endpoint owner hanya mengembalikan order untuk restoran yang dimiliki token pemanggil. Order customer hanya dapat dibaca oleh customer pemiliknya.
+
 ### Surplus listing owner
 
 Semua endpoint berikut memerlukan token `RestaurantOwner`. ID restoran dan listing tetap diperiksa terhadap owner di token; data owner lain menghasilkan `404`.
