@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { addRestaurantRoutes, type RestaurantStore } from './restaurant.js'
 import { addMenuRoutes, type MenuStore } from './menu-production.js'
 import { addListingRoutes, type ListingStore } from './surplus-listing.js'
+import { addMarketplaceRoutes, type MarketplaceStore } from './marketplace.js'
 import {
   createToken,
   hashPassword,
@@ -53,6 +54,7 @@ type Dependencies = {
   menus?: MenuStore
   menuUploadDir?: string
   listings?: ListingStore
+  marketplace?: MarketplaceStore
 }
 
 const registerSchema = z.object({
@@ -95,7 +97,7 @@ function authResponse(user: User, jwtConfig: JwtConfig) {
   }
 }
 
-export function createApp({ users, passwordResets, sendPasswordReset, restaurants, uploadDir, jwt: jwtConfig, frontendUrl, authRateLimit = 10, menus, menuUploadDir, listings }: Dependencies) {
+export function createApp({ users, passwordResets, sendPasswordReset, restaurants, uploadDir, jwt: jwtConfig, frontendUrl, authRateLimit = 10, menus, menuUploadDir, listings, marketplace }: Dependencies) {
   if (Buffer.byteLength(jwtConfig.secret, 'utf8') < 32) throw new Error('JWT_SECRET must contain at least 32 bytes.')
   if (!jwtConfig.issuer || !jwtConfig.audience || jwtConfig.expiresMinutes < 1 || jwtConfig.expiresMinutes > 1440) {
     throw new Error('JWT issuer, audience, or expiry configuration is invalid.')
@@ -223,6 +225,7 @@ export function createApp({ users, passwordResets, sendPasswordReset, restaurant
   if (restaurants) addRestaurantRoutes(app, restaurants, requireRole('RestaurantOwner'), uploadDir ?? 'uploads')
   if (menus && menuUploadDir) addMenuRoutes(app, menus, requireRole('RestaurantOwner'), menuUploadDir)
   if (listings) addListingRoutes(app, listings, requireRole('RestaurantOwner'))
+  if (marketplace) addMarketplaceRoutes(app, marketplace, requireRole('Customer'))
 
   app.use((error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
     if (typeof error === 'object' && error !== null && 'status' in error && error.status === 413) {

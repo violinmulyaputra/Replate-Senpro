@@ -2,6 +2,7 @@ import { PrismaMssql } from '@prisma/adapter-mssql'
 import { DuplicateEmailError, type NewUser, type PasswordResetStore, type UserStore } from './app.js'
 import { Prisma, PrismaClient } from './generated/prisma/client.js'
 import type { ProfileChanges, RestaurantRecord, RestaurantStore } from './restaurant.js'
+import { createPickupCode, type CustomerOrder, type MarketplaceListing, type MarketplaceStore } from './marketplace.js'
 
 function restaurantData(input: ProfileChanges): Prisma.RestaurantUncheckedUpdateManyInput {
   const { tags, ...fields } = input
@@ -56,6 +57,75 @@ function listingRecord(listing: ListingWithMenu): ListingRecord {
 }
 
 const listingInclude = { productionRecord: { include: { menu: true } } } as const
+const marketplaceListingInclude = {
+  productionRecord: {
+    include: {
+      menu: {
+        include: {
+          photos: { orderBy: { sortOrder: 'asc' as const } },
+          restaurant: true,
+        },
+      },
+    },
+  },
+}
+const orderInclude = {
+  items: { include: { surplusListing: { include: marketplaceListingInclude } } },
+  pickup: true,
+}
+
+function marketplaceListing(record: Prisma.SurplusListingGetPayload<{ include: typeof marketplaceListingInclude }>): MarketplaceListing {
+  const { productionRecord, ...listing } = record
+  const { menu } = productionRecord
+  const { photos, restaurant, allergensJson, dietTagsJson, normalPrice, ...menuFields } = menu
+  const normal = normalPrice.toNumber()
+  const rescue = listing.rescuePrice.toNumber()
+  return {
+    surplusListingId: listing.surplusListingId,
+    menuId: menu.menuId,
+    menuName: menu.name,
+    description: menu.description,
+    category: menu.category,
+    normalPrice: normal,
+    rescuePrice: rescue,
+    discountPercent: normal > 0 ? Math.round((1 - rescue / normal) * 100) : 0,
+    photos: photos.map((photo) => photo.url),
+    allergens: JSON.parse(allergensJson) as string[],
+    dietTags: JSON.parse(dietTagsJson) as string[],
+    allergenNote: menuFields.allergenNote,
+    restaurant: {
+      restaurantId: restaurant.restaurantId,
+      name: restaurant.name,
+      address: restaurant.address,
+      latitude: restaurant.latitude?.toNumber() ?? null,
+      longitude: restaurant.longitude?.toNumber() ?? null,
+      logoUrl: restaurant.logoUrl,
+    },
+    availableQuantity: listing.availableQuantity,
+    pickupStart: listing.pickupStart.toISOString(),
+    pickupEnd: listing.pickupEnd.toISOString(),
+    pickupDirections: restaurant.pickupDirections,
+  }
+}
+
+function customerOrder(record: Prisma.OrderGetPayload<{ include: typeof orderInclude }>): CustomerOrder {
+  return {
+    orderId: record.orderId,
+    status: record.status,
+    totalAmount: record.totalAmount.toNumber(),
+    orderedAt: record.orderedAt.toISOString(),
+    pickupCode: record.pickup?.pickupCode ?? null,
+    estimatedPickupAt: record.pickup?.estimatedPickupAt.toISOString() ?? null,
+    items: record.items.map((item) => ({
+      menuName: item.surplusListing.productionRecord.menu.name,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice.toNumber(),
+      subtotal: item.subtotal.toNumber(),
+    })),
+  }
+}
+
+class CheckoutUnavailable extends Error {}
 
 export function createDatabase(databaseUrl: string) {
   const prisma = new PrismaClient({ adapter: new PrismaMssql(databaseUrl) })
@@ -224,5 +294,105 @@ export function createDatabase(databaseUrl: string) {
       return listingRecord(row)
     },
   }
-  return { prisma, users, passwordResets, restaurants, menus, listings }
+  const marketplace: MarketplaceStore = {
+    async listListings(filter, now) {
+      const menu: Prisma.MenuWhereInput = { isActive: true, restaurant: { isOpen: true } }
+      if (filter.category) menu.category = { equals: filter.category }
+      if (filter.search) menu.OR = [
+        { name: { contains: filter.search } },
+        { description: { contains: filter.search } },
+        { restaurant: { name: { contains: filter.search } } },
+      ]
+      const rows = await prisma.surplusListing.findMany({
+        where: {
+          status: 'Active', availableQuantity: { gt: 0 }, pickupStart: { gt: now }, pickupEnd: { gt: now },
+          productionRecord: { menu },
+        },
+        include: marketplaceListingInclude,
+        orderBy: { pickupStart: 'asc' },
+        take: 100,
+      })
+      return rows.map(marketplaceListing)
+    },
+    async getListing(listingId, now) {
+      const row = await prisma.surplusListing.findFirst({
+        where: {
+          surplusListingId: listingId, status: 'Active', availableQuantity: { gt: 0 },
+          pickupStart: { gt: now }, pickupEnd: { gt: now },
+          productionRecord: { menu: { isActive: true, restaurant: { isOpen: true } } },
+        },
+        include: marketplaceListingInclude,
+      })
+      return row ? marketplaceListing(row) : null
+    },
+    async createOrder(customerId, items, now) {
+      try {
+        return await prisma.$transaction(async (tx) => {
+          const rows = []
+          let restaurantId: number | null = null
+          for (const item of items) {
+            const row = await tx.surplusListing.findFirst({
+              where: {
+                surplusListingId: item.surplusListingId, status: 'Active', availableQuantity: { gte: item.quantity },
+                pickupStart: { gt: now }, pickupEnd: { gt: now },
+                productionRecord: { menu: { isActive: true, restaurant: { isOpen: true } } },
+              },
+              include: marketplaceListingInclude,
+            })
+            if (!row) return null
+            const currentRestaurantId = row.productionRecord.menu.restaurantId
+            if (restaurantId !== null && restaurantId !== currentRestaurantId) return null
+            restaurantId = currentRestaurantId
+            rows.push({ row, item })
+          }
+
+          const starts = rows.map(({ row }) => row.pickupStart.getTime())
+          const ends = rows.map(({ row }) => row.pickupEnd.getTime())
+          const pickupStart = new Date(Math.max(...starts))
+          const pickupEnd = Math.min(...ends)
+          if (pickupStart.getTime() >= pickupEnd) return null
+
+          const orderItems = []
+          for (const { row, item } of rows) {
+            const allocated = await tx.surplusListing.updateMany({
+              where: {
+                surplusListingId: item.surplusListingId, status: 'Active', availableQuantity: { gte: item.quantity },
+                pickupStart: { gt: now }, pickupEnd: { gt: now },
+                productionRecord: { menu: { isActive: true, restaurant: { isOpen: true } } },
+              },
+              data: { availableQuantity: { decrement: item.quantity } },
+            })
+            if (allocated.count !== 1) throw new CheckoutUnavailable()
+            const unitPrice = row.rescuePrice
+            orderItems.push({ surplusListingId: item.surplusListingId, quantity: item.quantity, unitPrice, subtotal: unitPrice.mul(item.quantity) })
+          }
+          const totalAmount = orderItems.slice(1).reduce((total, item) => total.add(item.subtotal), orderItems[0]!.subtotal)
+          const order = await tx.order.create({
+            data: {
+              customerId,
+              restaurantId: restaurantId!,
+              status: 'Pending',
+              totalAmount,
+              items: { create: orderItems },
+              pickup: { create: { pickupCode: createPickupCode(), estimatedPickupAt: pickupStart, status: 'Pending' } },
+            },
+            include: orderInclude,
+          })
+          return customerOrder(order)
+        })
+      } catch (error) {
+        if (error instanceof CheckoutUnavailable) return null
+        throw error
+      }
+    },
+    async listOrders(customerId) {
+      const rows = await prisma.order.findMany({ where: { customerId }, include: orderInclude, orderBy: { orderedAt: 'desc' } })
+      return rows.map(customerOrder)
+    },
+    async getOrder(customerId, orderId) {
+      const row = await prisma.order.findFirst({ where: { orderId, customerId }, include: orderInclude })
+      return row ? customerOrder(row) : null
+    },
+  }
+  return { prisma, users, passwordResets, restaurants, menus, listings, marketplace }
 }
