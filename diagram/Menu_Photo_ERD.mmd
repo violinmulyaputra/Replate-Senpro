@@ -1,0 +1,38 @@
+erDiagram
+    RESTAURANT ||--o{ MENU : has
+    MENU ||--o{ MENU_PHOTO : has
+    MENU ||--o{ PRODUCTION_RECORD : records
+    PRODUCTION_RECORD ||--o{ SURPLUS_LISTING : creates
+
+    RESTAURANT {
+        int restaurant_id PK
+        int owner_id FK
+        string name
+    }
+    MENU {
+        int menu_id PK
+        int restaurant_id FK
+        string name
+        string category
+        decimal normal_price
+    }
+    MENU_PHOTO {
+        int menu_photo_id PK
+        int menu_id FK
+        string url
+        int sort_order
+    }
+    PRODUCTION_RECORD {
+        int production_record_id PK
+        int menu_id FK
+        date production_date
+        int produced_quantity
+        int sold_quantity
+        int surplus_quantity
+    }
+    SURPLUS_LISTING {
+        int surplus_listing_id PK
+        int production_record_id FK
+        decimal rescue_price
+        int available_quantity
+    }

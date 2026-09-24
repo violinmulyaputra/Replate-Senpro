@@ -21,3 +21,4 @@ backend/uploads/
 .env.*
 !.env.example
 .DS_Store
+backend/menu-uploads/
