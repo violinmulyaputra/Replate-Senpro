@@ -7,15 +7,13 @@
   min-height: 100vh;
   background: #faf8f3;
   color: var(--ink);
-  font:
-    14px Arial,
-    sans-serif;
+  font: 14px 'Plus Jakarta Sans', Arial, sans-serif;
 }
 .menu-layout * {
   box-sizing: border-box;
 }
 .menu-sidebar {
-  width: 230px;
+  width: 260px;
   flex: none;
   background: #fff;
   border-right: 1px solid var(--line);
@@ -27,32 +25,36 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  height: 68px;
-  padding: 15px 24px;
-  border-bottom: 1px solid var(--line);
+  height: auto;
+  margin: 16px 16px 0;
+  padding: 4px;
   color: var(--green);
 }
-.menu-brand span {
-  font-size: 27px;
+.menu-brand img {
+  flex: none;
 }
 .menu-brand strong {
-  font-size: 16px;
+  font-size: 20px;
+  letter-spacing: -0.5px;
 }
 .menu-store {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 16px 14px 18px;
-  padding: 12px;
-  background: #faf8f3;
-  border: 1px solid var(--line);
-  border-radius: 14px;
+  margin: 24px 20px 18px;
+  padding: 8px;
+  background: #f0f5f0;
+  border-radius: 12px;
 }
 .menu-store > span {
-  background: var(--green);
-  border-radius: 10px;
-  color: #fff;
-  padding: 12px;
+  display: grid;
+  place-items: center;
+  min-width: 40px;
+  min-height: 40px;
+  background: #9ff4cb;
+  border-radius: 50%;
+  color: var(--green);
+  padding: 8px;
   font-weight: 700;
 }
 .menu-store strong,
@@ -70,19 +72,29 @@
 .menu-sidebar nav {
   display: grid;
   gap: 4px;
-  padding: 0 14px;
+  padding: 0 20px;
 }
 .menu-sidebar nav a,
 .menu-sidebar nav span {
-  padding: 11px 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
   color: #4b5750;
   text-decoration: none;
-  border-radius: 10px;
-  font-size: 13px;
+  border-radius: 12px;
+  font-size: 15px;
+  line-height: 20px;
+  min-height: 36px;
+}
+.menu-sidebar nav img {
+  flex: none;
+  width: 20px;
+  height: 20px;
 }
 .menu-sidebar nav .active {
-  background: var(--green);
-  color: #fff;
+  background: #ddede5;
+  color: var(--green);
   font-weight: 700;
 }
 .menu-bottom {
@@ -95,10 +107,22 @@
   background: none;
   color: #d32f2f;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .menu-main {
   flex: 1;
   min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .menu-layout { display: block; }
+  .menu-sidebar { width: auto; min-height: 0; position: relative; }
+  .menu-brand { margin: 8px 12px; }
+  .menu-store, .menu-bottom { display: none; }
+  .menu-sidebar nav { display: flex; overflow-x: auto; padding: 0 12px 10px; }
+  .menu-sidebar nav a, .menu-sidebar nav span { white-space: nowrap; }
 }
 .menu-header {
   background: #fff;
