@@ -1,3 +1,4 @@
+![Cloud Deployment Architecture Diagram](Cloud%20Deployment%20Architecture%20Diagram.png)
 # Catatan Pendamping Replate Cloud Deployment Architecture Diagram
 
 ## Keterangan Alur
