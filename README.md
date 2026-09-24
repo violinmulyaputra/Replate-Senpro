@@ -41,6 +41,8 @@ Replate-Senpro/
 
 Database menggunakan SQL Server secara lokal dan Azure SQL saat deployment. Frontend hanya berkomunikasi dengan database melalui REST API.
 
+Foto menu diunggah melalui backend dan disimpan sebagai berkas di direktori `MENU_UPLOAD_DIR` (default `menu-uploads` relatif terhadap direktori kerja backend). Azure SQL hanya menyimpan URL dan urutan foto pada tabel `MenuPhotos`, bukan isi berkas gambar. Untuk deployment Azure, penyimpanan berkas lokal ini perlu diganti dengan penyimpanan persisten.
+
 ## Menjalankan aplikasi
 
 Gunakan Node.js 24 dan pnpm 10.
@@ -101,6 +103,8 @@ sqlserver://host:1433;database=Replate;user=user;password=password;encrypt=true
 ![Use Case Diagram Replate](diagram/Replate_Use_Case_Diagram.drawio.png)
 
 ![Entity Relationship Diagram Replate](diagram/Raplate_ERD.png)
+
+ERD gambar di atas adalah diagram awal. [Tambahan ERD foto menu](diagram/Menu_Photo_ERD.mmd) memperlihatkan relasi `Menu 1 : 0..* MenuPhoto`. Foto listing surplus berasal dari menu melalui `SurplusListing → ProductionRecord → Menu → MenuPhoto`; belum ada foto tersendiri pada `SurplusListing`.
 
 ![Customer Low-Fidelity Wireframe Replate](diagram/Customer_Wireframe.png)
 

@@ -14,6 +14,7 @@ const environmentSchema = z.object({
   SMTP_PASSWORD: z.string().optional(),
   SMTP_FROM: z.email().optional(),
   UPLOAD_DIR: z.string().min(1).default('uploads'),
+  MENU_UPLOAD_DIR: z.string().min(1).default('menu-uploads'),
 })
 
 export function loadConfig(environment: NodeJS.ProcessEnv = process.env) {
@@ -33,6 +34,7 @@ export function loadConfig(environment: NodeJS.ProcessEnv = process.env) {
       from: value.SMTP_FROM!,
     } : null,
     uploadDir: value.UPLOAD_DIR,
+    menuUploadDir: value.MENU_UPLOAD_DIR,
     jwt: {
       secret: value.JWT_SECRET,
       issuer: value.JWT_ISSUER,

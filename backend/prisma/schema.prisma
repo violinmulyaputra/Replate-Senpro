@@ -71,15 +71,31 @@ model Menu {
   restaurantId              Int                        @map("RestaurantId")
   name                      String                     @db.NVarChar(150) @map("Name")
   description               String                     @db.NVarChar(1000) @map("Description")
+  category                  String                     @default("Lainnya") @db.NVarChar(80) @map("Category")
+  allergensJson             String                     @default("[]") @db.NVarChar(1000) @map("AllergensJson")
+  dietTagsJson              String                     @default("[]") @db.NVarChar(1000) @map("DietTagsJson")
+  allergenNote              String?                    @db.NVarChar(500) @map("AllergenNote")
   normalPrice               Decimal                    @db.Decimal(18, 2) @map("NormalPrice")
   isActive                  Boolean                    @default(true) @map("IsActive")
   createdAt                 DateTime                   @default(now()) @db.DateTimeOffset @map("CreatedAt")
   restaurant                Restaurant                 @relation(fields: [restaurantId], references: [restaurantId], onDelete: NoAction, onUpdate: NoAction)
   productionRecords         ProductionRecord[]
   productionRecommendations ProductionRecommendation[]
+  photos                    MenuPhoto[]
 
   @@index([restaurantId], map: "IX_Menus_RestaurantId")
   @@map("Menus")
+}
+
+model MenuPhoto {
+  menuPhotoId Int    @id @default(autoincrement()) @map("MenuPhotoId")
+  menuId      Int    @map("MenuId")
+  url         String @db.NVarChar(255) @map("Url")
+  sortOrder   Int    @map("SortOrder")
+  menu        Menu   @relation(fields: [menuId], references: [menuId], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([menuId, sortOrder], map: "IX_MenuPhotos_MenuId_SortOrder")
+  @@map("MenuPhotos")
 }
 
 model ProductionRecord {

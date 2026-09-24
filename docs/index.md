@@ -211,6 +211,8 @@ Functional requirements Replate disusun berdasarkan use case yang telah dirancan
 ### Entity Relationship Diagram
    
 ![Entity Relationship Diagram](Raplate_ERD.png)
+
+Diagram gambar ini adalah ERD awal. Lihat [tambahan ERD foto menu](../diagram/Menu_Photo_ERD.mmd) untuk tabel `MenuPhotos` dan relasinya dengan menu, catatan produksi, serta listing surplus.
    
 ### Low-Fidelity Wireframe
    

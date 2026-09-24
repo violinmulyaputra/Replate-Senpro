@@ -2,14 +2,17 @@ import { createApp } from './app.js'
 import { loadConfig } from './config.js'
 import { createDatabase } from './database.js'
 import { createMailer } from './mailer.js'
+import path from 'node:path'
 
 const config = loadConfig()
-const { prisma, users, passwordResets, restaurants } = createDatabase(config.databaseUrl)
+const { prisma, users, passwordResets, restaurants, menus } = createDatabase(config.databaseUrl)
 const app = createApp({
   users,
   passwordResets,
   restaurants,
   uploadDir: config.uploadDir,
+  menus,
+  menuUploadDir: path.resolve(config.menuUploadDir),
   ...(config.smtp ? { sendPasswordReset: createMailer(config.smtp) } : {}),
   jwt: config.jwt,
   frontendUrl: config.frontendUrl,
