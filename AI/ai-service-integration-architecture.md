@@ -18,21 +18,11 @@ Data yang digunakan meliputi:
 AI Service menghasilkan rekomendasi produksi dan mengirimkan hasil tersebut ke Backend API. Backend API kemudian bertanggung jawab untuk menyimpan hasil rekomendasi ke tabel `PRODUCTION_RECOMMENDATION`.
 
 ## 5. Integration Flow
+Alur integrasi AI Production Recommendation:
 
-```text
-[ Cloud Scheduler ]
-        │
-        ▼ (Trigger Scheduled Job)
-[ AI Service (Scikit-Learn) ]
-        │
-        ├──────► 1. Request Input Data ──────► [ Backend API ]
-        │                                             │
-        │◄───── 2. Return Input Data ─────────────────┤
-        │                                             │
-        │ (Run Scikit-Learn Inference)                ▼
-        │                                     [ Azure SQL Database ]
-        │                                             │
-        └──────► 3. Send Recommendation ──────► [ Backend API ]
-                                                      │
-                                                      ▼ (Write Result)
-                                            [ PRODUCTION_RECOMMENDATION Table ]
+1. Cloud Scheduler menjalankan AI Service secara berkala.
+2. AI Service meminta data input melalui Backend API.
+3. Backend API mengambil data yang dibutuhkan dari Azure SQL Database.
+4. AI Service melakukan inference menggunakan model Scikit-Learn.
+5. AI Service mengirim hasil rekomendasi ke Backend API.
+6. Backend API menyimpan hasil ke `PRODUCTION_RECOMMENDATION`.
