@@ -1,8 +1,9 @@
 import { PrismaMssql } from '@prisma/adapter-mssql'
+import { timingSafeEqual } from 'node:crypto'
 import { DuplicateEmailError, type NewUser, type PasswordResetStore, type UserStore } from './app.js'
 import { Prisma, PrismaClient } from './generated/prisma/client.js'
 import type { ProfileChanges, RestaurantRecord, RestaurantStore } from './restaurant.js'
-import { createPickupCode, type CustomerOrder, type MarketplaceListing, type MarketplaceStore } from './marketplace.js'
+import { createPickupCode, type CustomerOrder, type MarketplaceListing, type MarketplaceStore, type OwnerOrder } from './marketplace.js'
 
 function restaurantData(input: ProfileChanges): Prisma.RestaurantUncheckedUpdateManyInput {
   const { tags, ...fields } = input
@@ -73,6 +74,7 @@ const orderInclude = {
   items: { include: { surplusListing: { include: marketplaceListingInclude } } },
   pickup: true,
 }
+const ownerOrderInclude = { ...orderInclude, customer: { select: { name: true } }, restaurant: { select: { name: true } } } as const
 
 function marketplaceListing(record: Prisma.SurplusListingGetPayload<{ include: typeof marketplaceListingInclude }>): MarketplaceListing {
   const { productionRecord, ...listing } = record
@@ -122,6 +124,17 @@ function customerOrder(record: Prisma.OrderGetPayload<{ include: typeof orderInc
       unitPrice: item.unitPrice.toNumber(),
       subtotal: item.subtotal.toNumber(),
     })),
+  }
+}
+
+function ownerOrder(record: Prisma.OrderGetPayload<{ include: typeof ownerOrderInclude }>): OwnerOrder {
+  return {
+    ...customerOrder(record),
+    pickupCode: null,
+    customerName: record.customer.name,
+    restaurantName: record.restaurant.name,
+    pickupStatus: record.pickup?.status ?? null,
+    verifiedAt: record.pickup?.verifiedAt?.toISOString() ?? null,
   }
 }
 
@@ -392,6 +405,32 @@ export function createDatabase(databaseUrl: string) {
     async getOrder(customerId, orderId) {
       const row = await prisma.order.findFirst({ where: { orderId, customerId }, include: orderInclude })
       return row ? customerOrder(row) : null
+    },
+    async listOwnerOrders(ownerId) {
+      const rows = await prisma.order.findMany({ where: { restaurant: { ownerId } }, include: ownerOrderInclude, orderBy: { orderedAt: 'desc' } })
+      return rows.map(ownerOrder)
+    },
+    async verifyPickup(ownerId, orderId, pickupCode, now) {
+      return prisma.$transaction(async (tx) => {
+        const order = await tx.order.findFirst({ where: { orderId, restaurant: { ownerId } }, include: ownerOrderInclude })
+        if (!order) return 'not-found'
+        if (!order.pickup) return 'invalid-status'
+        const storedCode = Buffer.from(order.pickup.pickupCode)
+        const submittedCode = Buffer.from(pickupCode)
+        if (storedCode.length !== submittedCode.length || !timingSafeEqual(storedCode, submittedCode)) return 'invalid-code'
+        if (order.pickup.verifiedAt || order.pickup.status !== 'Pending') return 'already-verified'
+        if (order.status !== 'Pending') return 'invalid-status'
+
+        const pickup = await tx.pickup.updateMany({
+          where: { pickupId: order.pickup.pickupId, pickupCode, verifiedAt: null, status: 'Pending' },
+          data: { verifiedAt: now, status: 'Verified' },
+        })
+        if (pickup.count !== 1) return 'already-verified'
+        const changed = await tx.order.updateMany({ where: { orderId, status: 'Pending' }, data: { status: 'Completed' } })
+        if (changed.count !== 1) throw new Error('Order status changed while verifying pickup.')
+        const updated = await tx.order.findUniqueOrThrow({ where: { orderId }, include: ownerOrderInclude })
+        return ownerOrder(updated)
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable })
     },
   }
   return { prisma, users, passwordResets, restaurants, menus, listings, marketplace }

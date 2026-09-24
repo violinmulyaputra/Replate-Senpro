@@ -44,12 +44,21 @@ export type CustomerOrder = {
   }>
 }
 
+export type OwnerOrder = CustomerOrder & {
+  customerName: string
+  restaurantName: string
+  pickupStatus: string | null
+  verifiedAt: string | null
+}
+
 export type MarketplaceStore = {
   listListings(filter: { search?: string; category?: string }, now: Date): Promise<MarketplaceListing[]>
   getListing(listingId: number, now: Date): Promise<MarketplaceListing | null>
   createOrder(customerId: number, items: Array<{ surplusListingId: number; quantity: number }>, now: Date): Promise<CustomerOrder | null>
   listOrders(customerId: number): Promise<CustomerOrder[]>
   getOrder(customerId: number, orderId: number): Promise<CustomerOrder | null>
+  listOwnerOrders(ownerId: number): Promise<OwnerOrder[]>
+  verifyPickup(ownerId: number, orderId: number, pickupCode: string, now: Date): Promise<'not-found' | 'invalid-code' | 'already-verified' | 'invalid-status' | OwnerOrder>
 }
 
 const checkoutSchema = z.object({
@@ -60,7 +69,7 @@ const id = (value: string | undefined) => {
   return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null
 }
 
-export function addMarketplaceRoutes(app: express.Express, store: MarketplaceStore, customerOnly: RequestHandler) {
+export function addMarketplaceRoutes(app: express.Express, store: MarketplaceStore, customerOnly: RequestHandler, ownerOnly: RequestHandler) {
   app.get('/api/marketplace/listings', async (request, response, next) => {
     try {
       const search = typeof request.query.q === 'string' ? request.query.q.trim().slice(0, 100) : undefined
@@ -106,6 +115,30 @@ export function addMarketplaceRoutes(app: express.Express, store: MarketplaceSto
       if (!orderId) return response.status(400).json({ title: 'Invalid order ID.' })
       const order = await store.getOrder(response.locals.ownerId as number, orderId)
       return order ? response.json(order) : response.status(404).json({ title: 'Order not found.' })
+    } catch (error) {
+      next(error)
+    }
+  })
+  app.get('/api/owner/orders', ownerOnly, async (_request, response, next) => {
+    try {
+      response.json(await store.listOwnerOrders(response.locals.ownerId as number))
+    } catch (error) {
+      next(error)
+    }
+  })
+  app.post('/api/owner/orders/:orderId/verify-pickup', ownerOnly, async (request, response, next) => {
+    try {
+      const orderId = id(request.params.orderId as string)
+      const pickupCode = typeof request.body?.pickupCode === 'string' ? request.body.pickupCode.trim() : ''
+      if (!orderId || !/^[a-f0-9]{12}$/i.test(pickupCode)) {
+        return response.status(400).json({ title: 'Invalid order ID or pickup code.' })
+      }
+      const result = await store.verifyPickup(response.locals.ownerId as number, orderId, pickupCode.toUpperCase(), new Date())
+      if (result === 'not-found') return response.status(404).json({ title: 'Order not found.' })
+      if (result === 'invalid-code') return response.status(400).json({ title: 'Pickup code is invalid.' })
+      if (result === 'already-verified') return response.status(409).json({ title: 'Pickup was already verified.' })
+      if (result === 'invalid-status') return response.status(409).json({ title: 'Order cannot be verified in its current status.' })
+      return response.json(result)
     } catch (error) {
       next(error)
     }
