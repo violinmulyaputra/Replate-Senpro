@@ -122,6 +122,7 @@ model SurplusListing {
   pickupStart       DateTime         @db.DateTimeOffset @map("PickupStart")
   pickupEnd         DateTime         @db.DateTimeOffset @map("PickupEnd")
   status            String           @db.NVarChar(30) @map("Status")
+  pickupInstructions String?          @db.NVarChar(250) @map("PickupInstructions")
   createdAt         DateTime         @default(now()) @db.DateTimeOffset @map("CreatedAt")
   productionRecord  ProductionRecord @relation(fields: [productionRecordId], references: [productionRecordId], onDelete: NoAction, onUpdate: NoAction)
   cartItems         CartItem[]
