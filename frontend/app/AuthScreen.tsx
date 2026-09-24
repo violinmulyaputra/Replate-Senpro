@@ -1,0 +1,384 @@
+'use client'
+
+import Link from 'next/link'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { useState, type FormEvent } from 'react'
+import { apiUrl } from '../lib/api'
+import { saveSession, type Session } from '../lib/session'
+
+type Mode = 'login' | 'register' | 'forgot' | 'reset'
+type Role = 'Customer' | 'RestaurantOwner'
+
+function Brand({ mode }: { mode: Mode }) {
+  return (
+    <header className="auth-brand">
+      <div className="auth-logo">
+        <Image
+          src="/Replate-logo.png"
+          alt="Replate"
+          width={50}
+          height={50}
+          unoptimized
+        />
+      </div>
+      {mode === 'login' ? (
+        <>
+          <h1>Replate</h1>
+          <p>Makanan Baik, Lebih Sedikit Terbuang</p>
+        </>
+      ) : (
+        <>
+          <div className="auth-brand-badge">
+            ♻ Gerakan Peduli Pangan Bersama
+          </div>
+          <h1>Selamat Datang di Replate</h1>
+          <p>
+            Buat akun untuk selamatkan makanan lezat
+            <br />
+            bersama Replate
+          </p>
+        </>
+      )}
+    </header>
+  )
+}
+
+function RoleChoices({
+  role,
+  onChange,
+}: {
+  role: Role
+  onChange: (role: Role) => void
+}) {
+  return (
+    <div className="auth-roles" role="group" aria-label="Pilih peran akun">
+      <button
+        type="button"
+        className={role === 'Customer' ? 'selected' : ''}
+        onClick={() => onChange('Customer')}
+        aria-pressed={role === 'Customer'}
+      >
+        <span className="role-icon" aria-hidden="true">
+          ♟
+        </span>
+        <span>
+          <strong>Customer</strong>
+          <small>Beli Makanan Surplus</small>
+        </span>
+      </button>
+      <button
+        type="button"
+        className={role === 'RestaurantOwner' ? 'selected' : ''}
+        onClick={() => onChange('RestaurantOwner')}
+        aria-pressed={role === 'RestaurantOwner'}
+      >
+        <span className="role-icon" aria-hidden="true">
+          ▣
+        </span>
+        <span>
+          <strong>Pemilik Resto</strong>
+          <small>Kelola Surplus Menu</small>
+        </span>
+      </button>
+    </div>
+  )
+}
+
+async function post<T>(path: string, body: object): Promise<T> {
+  let response: Response
+  try {
+    response = await fetch(`${apiUrl}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+  } catch {
+    throw new Error('Tidak dapat terhubung ke server. Coba lagi nanti.')
+  }
+  if (!response.ok) {
+    const data = (await response.json().catch(() => null)) as {
+      title?: string
+    } | null
+    const messages: Record<string, string> = {
+      'Invalid email or password.': 'Email atau kata sandi salah.',
+      'Email is already registered.': 'Email sudah terdaftar.',
+      'Password reset is unavailable.':
+        'Reset kata sandi belum tersedia. Coba lagi nanti.',
+      'Reset link is invalid or expired.':
+        'Tautan reset tidak valid atau sudah kedaluwarsa.',
+    }
+    throw new Error(
+      messages[data?.title ?? ''] ??
+        data?.title ??
+        'Permintaan gagal. Coba lagi.',
+    )
+  }
+  return response.status === 204
+    ? (undefined as T)
+    : (response.json() as Promise<T>)
+}
+
+export default function AuthScreen({ mode }: { mode: Mode }) {
+  const router = useRouter()
+  const [role, setRole] = useState<Role>('Customer')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [remember, setRemember] = useState(false)
+  const [pending, setPending] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError('')
+    setMessage('')
+    if ((mode === 'register' || mode === 'reset') && password !== confirm) {
+      setError('Konfirmasi kata sandi tidak sama.')
+      return
+    }
+    const token =
+      mode === 'reset'
+        ? (new URLSearchParams(window.location.search).get('token') ?? '')
+        : ''
+    if (mode === 'reset' && !token) {
+      setError('Tautan reset tidak valid.')
+      return
+    }
+    setPending(true)
+    try {
+      if (mode === 'forgot') {
+        await post('/api/auth/forgot-password', { email })
+        setMessage(
+          'Jika email terdaftar, tautan reset akan dikirim. Periksa kotak masuk Anda.',
+        )
+      } else if (mode === 'reset') {
+        await post('/api/auth/reset-password', { token, password })
+        setMessage('Kata sandi berhasil diperbarui. Silakan masuk kembali.')
+      } else {
+        const session = await post<Session>(
+          mode === 'login' ? '/api/auth/login' : '/api/auth/register',
+          mode === 'login'
+            ? { email, password }
+            : { name, email, phone, password, role },
+        )
+        if (mode === 'login' && session.role !== role)
+          throw new Error('Peran yang dipilih tidak sesuai dengan akun ini.')
+        saveSession(session, mode === 'login' && remember)
+        router.push(
+          session.role === 'RestaurantOwner' ? '/owner/' : '/customer/',
+        )
+      }
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : 'Terjadi kesalahan. Coba lagi.',
+      )
+    } finally {
+      setPending(false)
+    }
+  }
+
+  const isLogin = mode === 'login'
+  const isRegister = mode === 'register'
+  return (
+    <main className={`auth-page ${isRegister ? 'register-page' : ''}`}>
+      <div className="auth-shell">
+        <Brand mode={mode} />
+        {(isLogin || isRegister) && (
+          <nav className="auth-tabs" aria-label="Autentikasi">
+            <Link className={isLogin ? 'active' : ''} href="/login/">
+              Masuk
+            </Link>
+            <Link className={isRegister ? 'active' : ''} href="/register/">
+              Daftar
+            </Link>
+          </nav>
+        )}
+        <form
+          className={`auth-form ${isRegister ? 'card' : ''}`}
+          onSubmit={submit}
+        >
+          {(isLogin || isRegister) && (
+            <div className="field-group">
+              <div className="field-head">
+                <span>{isLogin ? 'Masuk Sebagai' : 'Pilih Peran Akun'}</span>
+              </div>
+              <RoleChoices role={role} onChange={setRole} />
+            </div>
+          )}
+          {mode === 'forgot' && (
+            <>
+              <h2>Lupa kata sandi?</h2>
+              <p className="auth-help">
+                Masukkan email akun Replate untuk menerima tautan reset.
+              </p>
+            </>
+          )}
+          {mode === 'reset' && (
+            <>
+              <h2>Atur ulang kata sandi</h2>
+              <p className="auth-help">Buat kata sandi baru untuk akun Anda.</p>
+            </>
+          )}
+          {isRegister && (
+            <label className="auth-field">
+              Nama Lengkap <span>*</span>
+              <input
+                required
+                minLength={2}
+                maxLength={100}
+                autoComplete="name"
+                placeholder="Alya Putri"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
+            </label>
+          )}
+          {mode !== 'reset' && (
+            <label className="auth-field">
+              Email <span>{isRegister && '*'}</span>
+              <input
+                required
+                type="email"
+                autoComplete="email"
+                placeholder="contoh@email.com"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </label>
+          )}
+          {isRegister && (
+            <label className="auth-field">
+              Nomor Telepon <span>*</span>
+              <input
+                required
+                type="tel"
+                minLength={6}
+                maxLength={30}
+                autoComplete="tel"
+                placeholder="+62 812 3456 7890"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+              />
+            </label>
+          )}
+          {(isLogin || isRegister || mode === 'reset') && (
+            <label className="auth-field">
+              Kata Sandi <span>{isRegister && '*'}</span>
+              <span className="password-wrap">
+                <input
+                  required
+                  minLength={isLogin ? undefined : 8}
+                  maxLength={128}
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
+                  placeholder={
+                    isRegister ? 'Minimal 8 karakter' : 'Masukkan kata sandi'
+                  }
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={
+                    showPassword
+                      ? 'Sembunyikan kata sandi'
+                      : 'Tampilkan kata sandi'
+                  }
+                >
+                  {showPassword ? '◉' : '◎'}
+                </button>
+              </span>
+            </label>
+          )}
+          {(isRegister || mode === 'reset') && (
+            <label className="auth-field">
+              Konfirmasi Kata Sandi <span>*</span>
+              <input
+                required
+                minLength={8}
+                maxLength={128}
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password"
+                placeholder="Ulangi kata sandi"
+                value={confirm}
+                onChange={(event) => setConfirm(event.target.value)}
+              />
+            </label>
+          )}
+          {isLogin && (
+            <div className="auth-options">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(event) => setRemember(event.target.checked)}
+                />{' '}
+                Ingat saya
+              </label>
+              <Link href="/forgot-password/">Lupa kata sandi?</Link>
+            </div>
+          )}
+          {error && (
+            <p className="auth-feedback error" role="alert">
+              {error}
+            </p>
+          )}
+          {message && (
+            <p className="auth-feedback success" role="status">
+              {message}
+            </p>
+          )}
+          <button className="auth-submit" disabled={pending} type="submit">
+            {pending
+              ? 'Memproses...'
+              : isLogin
+                ? 'Masuk'
+                : isRegister
+                  ? 'Buat Akun'
+                  : mode === 'forgot'
+                    ? 'Kirim Tautan Reset'
+                    : 'Simpan Kata Sandi'}
+          </button>
+        </form>
+        {(isLogin || isRegister) && (
+          <div className="auth-impact">
+            <span>♧</span>
+            <p>
+              {isLogin ? (
+                'Setiap makanan berlebih yang diselamatkan mengurangi jejak karbon bersama Replate.'
+              ) : (
+                <>
+                  <strong>1 Porsi = Kurangi Emisi Karbon</strong>
+                  <br />
+                  Bergabung dengan 12.000+ pahlawan penyelamat makanan di
+                  kotamu.
+                </>
+              )}
+            </p>
+          </div>
+        )}
+        <p className="auth-footer">
+          {isLogin ? (
+            <>
+              Belum punya akun? <Link href="/register/">Daftar</Link>
+            </>
+          ) : isRegister ? (
+            <>
+              Sudah punya akun? <Link href="/login/">Masuk</Link>
+            </>
+          ) : (
+            <Link href="/login/">Kembali ke Masuk</Link>
+          )}
+        </p>
+      </div>
+    </main>
+  )
+}
