@@ -11,7 +11,7 @@ export default function MenuShell({
   children,
 }: {
   restaurant: string
-  active?: 'menu' | 'listing'
+  active?: 'menu' | 'listing' | 'orders'
   children: ReactNode
 }) {
   const router = useRouter()
@@ -37,7 +37,7 @@ export default function MenuShell({
           <Link className={active === 'listing' ? 'active' : ''} href="/owner/listings/">
             <Image src="/listing/listing.svg" alt="" width={20} height={20} />Buat Listing
           </Link>
-          <span><Image src="/listing/orders.svg" alt="" width={20} height={20} />Pesanan</span>
+          <Link className={active === 'orders' ? 'active' : ''} href="/owner/orders/"><Image src="/listing/orders.svg" alt="" width={20} height={20} />Pesanan</Link>
           <span><Image src="/listing/production.svg" alt="" width={20} height={20} />Catatan Produksi</span>
           <span><Image src="/listing/ai.svg" alt="" width={20} height={20} />Insight AI</span>
           <Link href="/owner/settings/"><Image src="/listing/settings.svg" alt="" width={20} height={20} />Pengaturan</Link>

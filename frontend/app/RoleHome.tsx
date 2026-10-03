@@ -47,6 +47,7 @@ export default function RoleHome({ role }: { role: Session['role'] }) {
                   Buat / Atur Profil Restoran →
                 </Link>
                 <Link href="/owner/menu/">Menu & Produksi →</Link>
+                <Link href="/owner/orders/">Pesanan & Pickup →</Link>
               </nav>
             )}
             <button

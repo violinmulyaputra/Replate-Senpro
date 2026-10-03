@@ -118,7 +118,9 @@ function customerOrder(record: Prisma.OrderGetPayload<{ include: typeof orderInc
     orderedAt: record.orderedAt.toISOString(),
     pickupCode: record.pickup?.pickupCode ?? null,
     estimatedPickupAt: record.pickup?.estimatedPickupAt.toISOString() ?? null,
+    restaurantName: record.items[0]?.surplusListing.productionRecord.menu.restaurant.name ?? '',
     items: record.items.map((item) => ({
+      photoUrl: item.surplusListing.productionRecord.menu.photos[0]?.url ?? null,
       menuName: item.surplusListing.productionRecord.menu.name,
       quantity: item.quantity,
       unitPrice: item.unitPrice.toNumber(),
