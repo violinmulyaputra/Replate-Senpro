@@ -54,9 +54,9 @@
 .marketplace-card-price strong { font-size: 14px; }
 .marketplace-card-price del { color: #777; font-size: 11px; }
 .marketplace-card-price small { color: var(--customer-muted); font-size: 10px; text-align: right; }
-.customer-bottom-nav { position: fixed; z-index: 5; right: 0; bottom: 0; left: 0; display: flex; justify-content: center; gap: min(20vw, 100px); border-top: 1px solid var(--customer-border); padding: 8px 18px calc(8px + env(safe-area-inset-bottom)); background: #fffffff2; backdrop-filter: blur(12px); }
+.customer-bottom-nav { position: fixed; z-index: 5; right: 0; bottom: 0; left: 0; display: flex; justify-content: center; gap: min(7vw, 60px); border-top: 1px solid var(--customer-border); padding: 8px 18px calc(8px + env(safe-area-inset-bottom)); background: #fffffff2; backdrop-filter: blur(12px); }
 .customer-bottom-nav a { position: relative; display: grid; min-width: 64px; justify-items: center; gap: 2px; color: #777; font-size: 12px; font-weight: 700; text-decoration: none; }
-.customer-bottom-nav a > span { font-size: 27px; line-height: 30px; }
+.customer-bottom-nav img { margin: 3px 0; }
 .customer-bottom-nav a.selected { color: #111; }
 .customer-bottom-nav b { position: absolute; top: -2px; right: 0; min-width: 17px; height: 17px; border-radius: 50%; padding: 2px 4px; background: #1f6b4f; color: #fff; font-size: 10px; text-align: center; }
 .customer-empty { display: grid; min-height: 240px; place-content: center; justify-items: center; padding: 24px; color: var(--customer-muted); text-align: center; }

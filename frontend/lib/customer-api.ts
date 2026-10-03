@@ -33,7 +33,8 @@ export type CustomerOrder = {
   orderedAt: string
   pickupCode: string | null
   estimatedPickupAt: string | null
-  items: Array<{ menuName: string; quantity: number; unitPrice: number; subtotal: number }>
+  restaurantName?: string
+  items: Array<{ photoUrl?: string | null; menuName: string; quantity: number; unitPrice: number; subtotal: number }>
 }
 
 export const customerRequest = ownerRequest

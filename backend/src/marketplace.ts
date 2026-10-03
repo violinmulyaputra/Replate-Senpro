@@ -36,7 +36,9 @@ export type CustomerOrder = {
   orderedAt: string
   pickupCode: string | null
   estimatedPickupAt: string | null
+  restaurantName?: string
   items: Array<{
+    photoUrl?: string | null
     menuName: string
     quantity: number
     unitPrice: number

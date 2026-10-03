@@ -68,7 +68,7 @@ export default function CustomerCart() {
     <main className="customer-app customer-cart-page">
       <header className="customer-cart-topbar"><Link href="/customer/" aria-label="Kembali ke marketplace">←</Link><h1>{order ? 'Pesanan Berhasil' : 'Keranjang'}</h1><span /></header>
       {loading ? <div className="customer-empty">Memuat keranjang…</div> : order ? (
-        <section className="checkout-success" aria-labelledby="order-success-heading"><span className="success-check">✓</span><small>Pesanan #{order.orderId}</small><h2 id="order-success-heading">Makananmu sudah dipesan!</h2><p>Tunjukkan kode ini ke restoran saat mengambil pesanan.</p><div className="pickup-code-card"><small>KODE PICKUP</small><strong>{order.pickupCode ?? '—'}</strong><span>Pickup sekitar {order.estimatedPickupAt ? time(order.estimatedPickupAt) : 'sesuai jadwal'}</span></div><div className="checkout-order-summary">{order.items.map((item, index) => <div key={`${item.menuName}-${index}`}><span>{item.quantity}× {item.menuName}</span><strong>{currency(item.subtotal)}</strong></div>)}<div className="checkout-total"><span>Total</span><strong>{currency(order.totalAmount)}</strong></div></div><Link className="customer-primary customer-browse-link" href="/customer/">Jelajahi makanan lain</Link></section>
+        <section className="checkout-success" aria-labelledby="order-success-heading"><span className="success-check">✓</span><small>Pesanan #{order.orderId}</small><h2 id="order-success-heading">Makananmu sudah dipesan!</h2><p>Tunjukkan kode ini ke restoran saat mengambil pesanan.</p><div className="pickup-code-card"><small>KODE PICKUP</small><strong>{order.pickupCode ?? '—'}</strong><span>Pickup sekitar {order.estimatedPickupAt ? time(order.estimatedPickupAt) : 'sesuai jadwal'}</span></div><div className="checkout-order-summary">{order.items.map((item, index) => <div key={`${item.menuName}-${index}`}><span>{item.quantity}× {item.menuName}</span><strong>{currency(item.subtotal)}</strong></div>)}<div className="checkout-total"><span>Total</span><strong>{currency(order.totalAmount)}</strong></div></div><Link className="customer-primary customer-browse-link" href={`/customer/order/?id=${order.orderId}`}>Lihat Status Pesanan</Link><Link className="customer-back" href="/customer/">Jelajahi makanan lain</Link></section>
       ) : (
         <>
           <section className="customer-cart-content"><small className="customer-eyebrow">Pastikan jadwal pickup sesuai</small><h2>Pesananmu</h2>
@@ -79,7 +79,7 @@ export default function CustomerCart() {
               </>
             )}
           </section>
-          <CustomerNav cartCount={cartCount} />
+          <CustomerNav cartCount={cartCount} active="cart" />
         </>
       )}
     </main>
