@@ -26,3 +26,14 @@ Alur integrasi AI Production Recommendation:
 4. AI Service melakukan inference menggunakan model Scikit-Learn.
 5. AI Service mengirim hasil rekomendasi ke Backend API.
 6. Backend API menyimpan hasil ke `PRODUCTION_RECOMMENDATION`.
+
+## 6. AI Development Flow
+
+Proses pengembangan AI Production Recommendation terdiri dari beberapa tahap:
+
+1. Mengambil data historis produksi, penjualan, dan surplus dari Backend API.
+2. Melakukan preprocessing dan menyiapkan data untuk model.
+3. Melatih model menggunakan Scikit-Learn berdasarkan data historis.
+4. Melakukan inference untuk menghasilkan prediksi permintaan.
+5. Menghasilkan rekomendasi jumlah produksi untuk periode berikutnya.
+6. Mengirim hasil rekomendasi ke Backend API untuk disimpan.
