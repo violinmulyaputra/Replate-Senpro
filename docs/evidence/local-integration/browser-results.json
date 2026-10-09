@@ -1,0 +1,12 @@
+{
+  "database": "SQL Server local Docker / ReplateLocal",
+  "testedAt": "2026-10-09T13:05:19.477Z",
+  "orderId": 5,
+  "checkout": "PASS",
+  "wrongCode": "PASS",
+  "correctCode": "PASS",
+  "completedCodeHidden": "PASS",
+  "history": "PASS",
+  "mobile": "PASS",
+  "pageErrors": []
+}

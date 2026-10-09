@@ -1,0 +1,36 @@
+{
+  "database": "SQL Server local Docker / ReplateLocal",
+  "testedAt": "2026-10-09T13:07:47.776Z",
+  "cases": [
+    {
+      "name": "production persistence, consistency, filtered history, owner isolation",
+      "result": "PASS"
+    },
+    {
+      "name": "order creation, stock reduction, pickup code persisted",
+      "result": "PASS"
+    },
+    {
+      "name": "out of stock rejected without extra order",
+      "result": "PASS"
+    },
+    {
+      "name": "different customer order access rejected",
+      "result": "PASS"
+    },
+    {
+      "name": "wrong pickup code and different owner rejected",
+      "result": "PASS"
+    },
+    {
+      "name": "correct pickup, persisted completion, reused code rejected",
+      "result": "PASS"
+    }
+  ],
+  "ids": {
+    "restaurantId": 4,
+    "menuId": 5,
+    "orderId": 6,
+    "demoOrderId": 7
+  }
+}

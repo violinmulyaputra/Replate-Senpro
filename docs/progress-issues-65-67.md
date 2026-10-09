@@ -6,11 +6,11 @@ Basis implementasi: `origin/main` commit `0c5e532`. Runtime: Node.js 24, pnpm 10
 
 | Issue | Hasil | Yang masih diperlukan |
 | --- | --- | --- |
-| #65 — order/pickup dengan database tim | Diagnostic read-only dijalankan. Prisma gagal `ESOCKET`; DNS server SQL gagal `ENOTFOUND`. Script `db:check` mengonfirmasi blocker yang sama. | Konfigurasi server Azure SQL tim yang aktif dan dapat di-resolve, lalu pengujian end-to-end asli. |
-| #66 — bukti demo order/pickup | Matriks uji dan urutan capture siap di bawah. | Screenshot dan video dari pengujian database asli setelah #65 berhasil. |
-| #67 — production record/histori | Form lama digunakan ulang, validasi jumlah konsisten, API dan halaman histori baru. | Pengujian persistensi pada Azure SQL tim setelah koneksi tersedia. |
+| #65 — order/pickup dengan database tim | Integrasi SQL Server lokal Docker lulus: order, stok, pickup, persistensi, dan isolasi owner/customer. Dua blocker migration diperbaiki. | Verifikasi Azure SQL tim tetap menyusul; hasil lokal tidak dianggap integrasi cloud. |
+| #66 — bukti demo order/pickup | Screenshot dan video end-to-end database lokal tersedia, dari checkout hingga Completed. | Capture Azure bila deliverable akhir mensyaratkan database tim/cloud. |
+| #67 — production record/histori | Form, validasi, API/filter histori, persistensi SQL lokal, serta browser QA lulus. | Ulangi deployment/integrasi pada Azure. |
 
-Issue #65 dan #66 belum selesai. Bukti QA berlabel fixture untuk #67 tidak membuktikan integrasi database asli dan tidak boleh dipakai sebagai demo asli order/pickup.
+Database lokal disiapkan setelah pengguna memilih pengerjaan lokal terlebih dahulu. Bukti baru di `docs/evidence/local-integration/` memakai SQL Server nyata, bukan fixture. Bukti fixture awal #67 tetap diberi label fixture. Instruksi menjalankan ulang dan berpindah ke Azure ada di `docs/local-database.md`.
 
 ## Menjalankan ulang
 
@@ -29,7 +29,7 @@ pnpm dev
 
 ## Matriks pengujian database asli (#65)
 
-Semua kasus berikut berstatus **belum dijalankan pada database tim**. Gunakan akun/data uji khusus, tanpa mengubah pesanan operasional. Catat ID data uji dan bersihkan hanya data tersebut setelah bukti tersimpan.
+Kasus order, stok habis, pickup salah/benar/sudah dipakai, persistensi Completed, dan kepemilikan owner/customer sudah **lulus pada SQL Server lokal**. Kasus ini belum dijalankan pada Azure SQL tim. Gunakan akun/data uji khusus, tanpa mengubah pesanan operasional. Catat ID data uji dan bersihkan hanya data tersebut setelah bukti tersimpan.
 
 | Kasus | Langkah | Ekspektasi dan bukti |
 | --- | --- | --- |
@@ -49,7 +49,7 @@ Semua kasus berikut berstatus **belum dijalankan pada database tim**. Gunakan ak
 4. Customer: reload detail, status Selesai, kode disembunyikan.
 5. Rekam satu video singkat alur yang sama. Gunakan akun uji; sembunyikan DevTools/header authorization dan konfigurasi environment.
 
-Belum ada screenshot atau video order/pickup database asli pada pengerjaan ini, karena DNS database menghalangi koneksi.
+Screenshot dan video database asli **lokal** sekarang tersedia di `docs/evidence/local-integration/`. DNS konfigurasi Azure lama masih merupakan blocker pengujian cloud.
 
 ## Kontrak histori produksi (#67)
 
@@ -68,4 +68,7 @@ Belum ada screenshot atau video order/pickup database asli pada pengerjaan ini, 
 - Regression test sebelumnya menghasilkan HTTP 200 untuk data produksi tidak konsisten; setelah perbaikan menghasilkan HTTP 400.
 - Test API mencakup filter histori, kepemilikan, token wajib, tanggal tidak valid, rentang terbalik, serta kuantitas tidak negatif dan integer.
 - QA Chrome terisolasi pada production build dengan fixture lulus: render histori, filter menu/tanggal/restoran, empty/error/retry, sesi kosong, dan viewport 390 px tanpa overflow halaman atau JavaScript page error.
-- Screenshot fixture #67 ada di `docs/evidence/issue-67/`; tidak ada bukti persistensi database asli.
+- Screenshot fixture awal #67 ada di `docs/evidence/issue-67/`. Bukti baru SQL Server lokal mencakup persistensi produksi, filter histori, stok berkurang, order Completed, dan pickup Verified.
+- Container lokal healthy, kelima migration berhasil diterapkan, deploy ulang tidak memiliki pending migration, dan `db:check` OK.
+- Pengujian browser memakai API asli tanpa route intercept: checkout, riwayat, kode pickup, verifikasi salah/benar, status selesai, histori produksi, dan mobile.
+- SQL Server x64 berhasil dijalankan setelah Rosetta Docker diaktifkan; QEMU sebelumnya crash. Metadata migration provider dan kompilasi constraint profil restoran diperbaiki berdasarkan kegagalan nyata.
