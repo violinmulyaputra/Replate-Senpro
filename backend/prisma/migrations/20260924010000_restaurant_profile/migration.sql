@@ -15,5 +15,5 @@ ALTER TABLE [dbo].[Restaurants] ADD
   [NotifyEmail] BIT NOT NULL CONSTRAINT [Restaurants_NotifyEmail_df] DEFAULT 1,
   [NotifyPush] BIT NOT NULL CONSTRAINT [Restaurants_NotifyPush_df] DEFAULT 0;
 
-ALTER TABLE [dbo].[Restaurants] ADD CONSTRAINT [CK_Restaurants_Latitude] CHECK ([Latitude] IS NULL OR [Latitude] BETWEEN -90 AND 90);
-ALTER TABLE [dbo].[Restaurants] ADD CONSTRAINT [CK_Restaurants_Longitude] CHECK ([Longitude] IS NULL OR [Longitude] BETWEEN -180 AND 180);
+EXEC sp_executesql N'ALTER TABLE [dbo].[Restaurants] ADD CONSTRAINT [CK_Restaurants_Latitude] CHECK ([Latitude] IS NULL OR [Latitude] BETWEEN -90 AND 90);';
+EXEC sp_executesql N'ALTER TABLE [dbo].[Restaurants] ADD CONSTRAINT [CK_Restaurants_Longitude] CHECK ([Longitude] IS NULL OR [Longitude] BETWEEN -180 AND 180);';

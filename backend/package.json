@@ -16,7 +16,8 @@
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
     "prisma:migrate": "prisma migrate deploy",
-    "db:check": "tsx --env-file-if-exists=.env scripts/check-database.ts"
+    "db:check": "tsx --env-file-if-exists=.env scripts/check-database.ts",
+    "test:local-integration": "tsx --env-file-if-exists=.env scripts/test-local-integration.ts"
   },
   "dependencies": {
     "@prisma/adapter-mssql": "7.10.0",
