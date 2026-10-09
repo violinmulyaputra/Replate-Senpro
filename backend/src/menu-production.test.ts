@@ -57,6 +57,10 @@ it('scopes menu writes to the owner and rejects surplus beyond production', asyn
     },
     production: async (ownerId, restaurantId) =>
       ownerId === restaurantId ? records : null,
+    productionHistory: async (ownerId, restaurantId, filters) =>
+      ownerId === restaurantId
+        ? records.filter((r) => (!filters.menuId || r.menuId === filters.menuId) && (!filters.from || r.productionDate >= filters.from) && (!filters.to || r.productionDate <= filters.to))
+        : null,
     upsertProduction: async (ownerId, menuId, date, input) => {
       if (
         !menus.some(
@@ -147,9 +151,38 @@ it('scopes menu writes to the owner and rejects surplus beyond production', asyn
       await request(app)
         .put('/api/owner/menus/1/production/2026-09-24')
         .set('Authorization', auth(1))
-        .send({ producedQuantity: 10, soldQuantity: 8, surplusQuantity: 1 })
+        .send({ producedQuantity: 10, soldQuantity: 9, surplusQuantity: 1 })
     ).status,
   ).toBe(400)
+
+  for (const input of [
+    { producedQuantity: -1, soldQuantity: 0, surplusQuantity: 0 },
+    { producedQuantity: 1.5, soldQuantity: 1, surplusQuantity: 0.5 },
+    { producedQuantity: 10, soldQuantity: 5 },
+  ]) {
+    expect((await request(app).put('/api/owner/menus/1/production/2026-09-25')
+      .set('Authorization', auth(1)).send(input)).status).toBe(400)
+  }
+  expect((await request(app).put('/api/owner/menus/1/production/2026-02-30')
+    .set('Authorization', auth(1)).send({ producedQuantity: 10, soldQuantity: 8, surplusQuantity: 2 })).status).toBe(400)
+
+  // Unaccounted production must not enter the AI dataset.
+  expect((await request(app)
+    .put('/api/owner/menus/1/production/2026-09-25')
+    .set('Authorization', auth(1))
+    .send({ producedQuantity: 10, soldQuantity: 5, surplusQuantity: 2 })).status).toBe(400)
+  expect(records).toHaveLength(1)
+
+  const historyPath = '/api/owner/restaurants/1/production/history'
+  const history = await request(app).get(historyPath + '?from=2026-09-01&to=2026-09-30&menuId=1').set('Authorization', auth(1))
+  expect(history.status).toBe(200)
+  expect(history.body).toHaveLength(1)
+  expect((await request(app).get(historyPath + '?menuId=2').set('Authorization', auth(1))).body).toEqual([])
+  expect((await request(app).get(historyPath).set('Authorization', auth(2))).status).toBe(404)
+  for (const query of ['?from=2026-02-30', '?from=2026-10-01&to=2026-09-01', '?menuId=0', '?from=bad', '?menuId=1&menuId=2']) {
+    expect((await request(app).get(historyPath + query).set('Authorization', auth(1))).status).toBe(400)
+  }
+  expect((await request(app).get(historyPath)).status).toBe(401)
 
   const png = Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9uN1sAAAAASUVORK5CYII=',

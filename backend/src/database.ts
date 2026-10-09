@@ -225,6 +225,19 @@ export function createDatabase(databaseUrl: string) {
       const records = await prisma.productionRecord.findMany({ where: { menu: { restaurantId }, productionDate: new Date(`${date}T00:00:00.000Z`) } })
       return records.map(productionRecord)
     },
+    async productionHistory(ownerId, restaurantId, filters) {
+      if (!await prisma.restaurant.findFirst({ where: { restaurantId, ownerId }, select: { restaurantId: true } })) return null
+      const records = await prisma.productionRecord.findMany({
+        where: { menu: { restaurantId },
+          ...(filters.menuId ? { menuId: filters.menuId } : {}),
+          productionDate: {
+            ...(filters.from ? { gte: new Date(`${filters.from}T00:00:00.000Z`) } : {}),
+            ...(filters.to ? { lte: new Date(`${filters.to}T00:00:00.000Z`) } : {}),
+          },
+        }, orderBy: [{ productionDate: 'desc' }, { productionRecordId: 'desc' }],
+      })
+      return records.map(productionRecord)
+    },
     async upsertProduction(ownerId, menuId, date, input) {
       return prisma.$transaction(async (tx) => {
         if (!await tx.menu.findFirst({ where: { menuId, restaurant: { ownerId } }, select: { menuId: true } })) return null

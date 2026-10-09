@@ -26,7 +26,7 @@ const productionSchema = z
   })
   .refine(
     ({ producedQuantity, soldQuantity, surplusQuantity }) =>
-      soldQuantity + surplusQuantity <= producedQuantity,
+      soldQuantity + surplusQuantity === producedQuantity,
   )
 const datePattern = /^\d{4}-\d{2}-\d{2}$/
 
@@ -44,6 +44,7 @@ export type ProductionRecord = ProductionInput & {
   productionDate: string
   recordedAt: Date
 }
+export type ProductionFilters = { menuId?: number; from?: string; to?: string }
 export type MenuStore = {
   list(ownerId: number, restaurantId: number): Promise<MenuRecord[] | null>
   create(
@@ -61,6 +62,7 @@ export type MenuStore = {
     restaurantId: number,
     date: string,
   ): Promise<ProductionRecord[] | null>
+  productionHistory(ownerId: number, restaurantId: number, filters: ProductionFilters): Promise<ProductionRecord[] | null>
   upsertProduction(
     ownerId: number,
     menuId: number,
@@ -219,6 +221,23 @@ export function addMenuRoutes(
       }
     },
   )
+  app.get('/api/owner/restaurants/:restaurantId/production/history', ownerOnly, async (request, response, next) => {
+    try {
+      const restaurantId = id(request.params.restaurantId as string)
+      const query = z.object({ menuId: z.string().optional(), from: z.string().optional(), to: z.string().optional() }).safeParse(request.query)
+      if (!restaurantId || !query.success) return response.status(400).json({ title: 'Invalid production filters.' })
+      const { menuId, from, to } = query.data
+      if ((menuId !== undefined && !id(menuId)) || (from !== undefined && !date(from)) || (to !== undefined && !date(to)) || (from && to && from > to)) {
+        return response.status(400).json({ title: 'Invalid production filters.' })
+      }
+      const records = await store.productionHistory(response.locals.ownerId as number, restaurantId, {
+        ...(menuId !== undefined ? { menuId: id(menuId)! } : {}),
+        ...(from !== undefined ? { from } : {}),
+        ...(to !== undefined ? { to } : {}),
+      })
+      return records ? response.json(records) : response.status(404).json({ title: 'Restaurant not found.' })
+    } catch (error) { next(error) }
+  })
   app.put(
     '/api/owner/menus/:menuId/production/:date',
     ownerOnly,
