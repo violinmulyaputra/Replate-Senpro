@@ -114,10 +114,10 @@ export default function MenuDashboard() {
     event.preventDefault()
     if (!editing || !token) return
     if (
-      quantities.soldQuantity + quantities.surplusQuantity >
+      quantities.soldQuantity + quantities.surplusQuantity !==
       quantities.producedQuantity
     ) {
-      setError('Terjual + surplus tidak boleh melebihi jumlah diproduksi.')
+      setError('Terjual + surplus harus sama dengan jumlah diproduksi.')
       return
     }
     setBusy(true)
